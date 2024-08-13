@@ -1,34 +1,33 @@
-#' Run a \code{cosimmr_input} object through STAN 
+#' Run a \code{cosimmrSTAN_input} object through STAN
 #'
-#' This is the main function of cosimmr. It takes a \code{cosimmr_input} object
-#' created via \code{\link{cosimmr_load}}, runs it in fixed form
+#' This is the main function of cosimmrSTAN. It takes a \code{cosimmrSTAN_input} object
+#' created via \code{\link{cosimmrSTAN_load}}, runs it in fixed form
 #' Variational Bayes  via STAN to determine the dietary proportions, and then
-#' outputs a \code{cosimmr_output} object for further analysis and plotting
-#' via \code{\link{plot.cosimmr_output}}.
+#' outputs a \code{cosimmrSTAN_output} object for further analysis and plotting
+#' via \code{\link{plot.cosimmrSTAN_output}}.
 #'
-#'@param cosimmr_in An object created via the function \code{\link{cosimmr_load}}
+#'@param cosimmrSTAN_in An object created via the function \code{\link{cosimmrSTAN_load}}
 #'@param type What type of model to run using STAN. Options are 'STAN_VB
-#'@param error_type Whether to use 'processxresidual' error term or 
+#'@param error_type Whether to use 'processxresidual' error term or
 #''process+residual' term. Defaults to 'processxresidual'
-#'@param prior_control A list of values including arguments named \code{sigma_shape} 
+#'@param prior_control A list of values including arguments named \code{sigma_shape}
 #'(prior values for sigma shape), \code{sigma_rate} (prior values for sigma rate)
 #'@param n_samples Number of samples to output. Defaults to 3600.
-#'@param nested Whether or not your model is hierarchical, i.e. has covariates 
 #'nested within each other. Defaults to FALSE.
 #'
-#'@return an object of class \code{cosimmr_output} with two named top-level 
-#'components: \item{input }{The \code{cosimmr_input} object given to the
-#' \code{cosimmr_ffvb} function} \item{output }{A set of outputs produced by
+#'@return an object of class \code{cosimmrSTAN_output} with two named top-level
+#'components: \item{input}{The \code{cosimmrSTAN_input} object given to the
+#' \code{cosimmrSTAN_ffvb} function} \item{output}{A set of outputs produced by
 #' the FFVB function. These can be analysed using the
-#' \code{\link{summary.cosimmr_output}} and \code{\link{plot.cosimmr_output}}
+#' \code{\link{summary.cosimmrSTAN_output}} and \code{\link{plot.cosimmrSTAN_output}}
 #' functions.}
 #'
 #' @author Emma Govan <emmagovan@@gmail.com>, Andrew Parnell
 #'
-#' @seealso \code{\link{cosimmr_load}} for creating objects suitable for this
-#' function, \code{\link{plot.cosimmr_input}} for creating isospace plots,
-#' \code{\link{summary.cosimmr_output}} for summarising output, and
-#' \code{\link{plot.cosimmr_output}} for plotting output.
+#' @seealso \code{\link{cosimmrSTAN_load}} for creating objects suitable for this
+#' function, \code{\link{plot.cosimmrSTAN_input}} for creating isospace plots,
+#' \code{\link{summary.cosimmrSTAN_output}} for summarising output, and
+#' \code{\link{plot.cosimmrSTAN_output}} for plotting output.
 #'
 #' @references Andrew C. Parnell, Donald L. Phillips, Stuart Bearhop, Brice X.
 #' Semmens, Eric J. Ward, Jonathan W. Moore, Andrew L. Jackson, Jonathan Grey,
@@ -47,9 +46,9 @@
 #' # Data set 1: 10 obs on 2 isos, 4 sources, with tefs and concdep
 #' data(geese_data_day1)
 #' x =  c(1,2,3,2,1,3,2,1,2)
-#' cosimmr_1 <- with(
+#' cosimmrSTAN_1 <- with(
 #'   geese_data_day1,
-#'   cosimmr_load(
+#'   cosimmrSTAN_load(
 #'     formula = mixtures ~ x,
 #'     source_names = source_names,
 #'     source_means = source_means,
@@ -61,39 +60,38 @@
 #' )
 #'
 #' # Plot
-#' plot(cosimmr_1)
+#' plot(cosimmrSTAN_1)
 #'
 #' # Print
-#' cosimmr_1
+#' cosimmrSTAN_1
 #'
 #' # FFVB run
-#' cosimmr_1_out <- cosimmr_stan(cosimmr_1)
+#' cosimmrSTAN_1_out <- cosimmr_stan(cosimmrSTAN_1)
 #'
 #' # Print it
-#' print(cosimmr_1_out)
+#' print(cosimmrSTAN_1_out)
 #'
 #' # Summary
-#' summary(cosimmr_1_out, type = "correlations")
-#' summary(cosimmr_1_out, type = "statistics")
-#' ans <- summary(cosimmr_1_out, type = c("quantiles", "statistics"))
+#' summary(cosimmrSTAN_1_out, type = "correlations")
+#' summary(cosimmrSTAN_1_out, type = "statistics")
+#' ans <- summary(cosimmrSTAN_1_out, type = c("quantiles", "statistics"))
 #'
 #' # Plot
-#' plot(cosimmr_1_out, type = "beta_boxplot")
-#' plot(cosimmr_1_out, type = "beta_histogram")
+#' plot(cosimmrSTAN_1_out, type = "beta_boxplot")
+#' plot(cosimmrSTAN_1_out, type = "beta_histogram")
 #'
 #'}
-#' @export cosimmr_ffvb
-cosimmr_stan <- function(cosimmr_in,
+#' @export cosimmr_stan
+cosimmr_stan <- function(cosimmrSTAN_in,
                          type = "STAN_VB",
                          error_type = "processxresidual",
                          prior_control = list(
                           sigma_shape = c(rep(1, cosimmr_in$n_tracers)),
                           sigma_rate = c(rep(1, cosimmr_in$n_tracers))
                          ),
-                         n_samples = 3600,
-                         nested = FALSE
+                         n_samples = 3600
                          ){
-  
+
   #Core detection - potentially have this as an option people can turn on and off?
   options(mc.cores = parallel::detectCores())
 
@@ -134,19 +132,41 @@ cosimmr_stan <- function(cosimmr_in,
 
   # Fit using VB
   # Get good starting value sby optimizing first
+##Loops here to select correct model
+
+    if(cosimmrSTAN_in$random_effects == TRUE){
+      if(cosimmrSTAN_in$nested == TRUE){
+        if(error_type == "processxresidual"){
+          #This is nested random effects pxr
+        }else if(error_type == "process+residual"){
+          #nested random effects p+r
+        }
+      }else{
+        if(error_type == "processxresidual"){
+          #This is not nested random effects pxr
+        }else if(error_type == "process+residual"){
+          #not nested random effects p+r
+        }
+      }
+
+    }else{if(error_type == "processxresidual"){
+      #This is not nested fixed effects pxr
+    }else if(error_type == "process+residual"){
+      #not nested fixed effects p+r
+    }}
 
   fit_opt <- rstan::optimizing(stanmodels$STAN_VB,
                         data = stan_dat)
-  
+
   which_beta <- grep('beta', names(fit_opt$par))
-  
+
   which_sigma <- grep('sigma', names(fit_opt$par))
-  
+
   beta_start_opt <- structure(fit_opt$par[which_beta],
                               dim  = c(stan_dat$K, stan_dat$L))
   sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
-  
-  
+
+
   fit_vb <- rstan::vb(
     stanmodels$STAN_VB, data = stan_dat,
     algorithm = 'fullrank',
@@ -156,7 +176,7 @@ cosimmr_stan <- function(cosimmr_in,
     tol_rel_obj = 0.00001, #convergence tolerance on the relative norm of the objective
     output_samples = n_samples
      )
-  
+
   #Want to simulate p here and return that?
   #And return sigma in a sensible way
   extracted_samples = rstan::extract(fit_vb)
@@ -164,25 +184,25 @@ cosimmr_stan <- function(cosimmr_in,
   #Want to extract all the betas in a sensible way first I think
   beta_ans = extracted_samples$beta # This is n_samples * K * n_covariates
   sigma_ans = extracted_samples$sigma
-  
-  
+
+
   #Want to simulate p
-  
+
 
   mylist <- list(
 fit_vb = fit_vb,
 beta = beta_ans,
 sigma = sigma_ans
   )
-  
-  
+
+
   output_all <- list(input = cosimmr_in, output = mylist)
-  
+
   class(output_all) <- c("cosimmr_output", "stan_vb")
-  
+
   return(output_all)
 
-  
+
 
 
   } else if(type == "STAN_MCMC"){
@@ -197,14 +217,14 @@ sigma = sigma_ans
 
 
   }
-  
+
 }
 
 
 
 # # Fit using VB
 # # Get good starting value sby optimizing first
-# fit_opt <- optimizing(model, 
+# fit_opt <- optimizing(model,
 #                       data = stan_dat)
 # which_beta <- grep('beta', names(fit_opt$par))
 # which_sigma <- grep('sigma', names(fit_opt$par))
@@ -215,11 +235,11 @@ sigma = sigma_ans
 # #                           0.362), dim = c(4L, 2L))
 # # log_sigma_raw_start <- c(1.5, 0.02)
 # fit_vb <- vb(
-#   model, data = stan_dat, 
+#   model, data = stan_dat,
 #   algorithm = 'fullrank',
 #   pars = c('beta', 'sigma'),
-#   init = list('beta' = beta_start_opt, 
-#               'log_sigma_raw' = sigma_raw_start_opt), 
+#   init = list('beta' = beta_start_opt,
+#               'log_sigma_raw' = sigma_raw_start_opt),
 #   tol_rel_obj = 0.00001,
 #   seed = 123
 # )
@@ -227,20 +247,20 @@ sigma = sigma_ans
 # plot(fit_vb, par = 'beta')
 # plot(fit_vb, par = 'sigma')
 # stop()
-# 
+#
 # # Try just finding best values
-# 
+#
 # # Fit using MCMC
 # fit_mcmc <- sampling(
-#   model, 
-#   data = stan_dat, 
+#   model,
+#   data = stan_dat,
 #   seed = 1
 # )
 # fit_mcmc
 # plot(fit_mcmc, par = 'beta')
 # plot(fit_mcmc, par = 'sigma')
-# 
-# 
+#
+#
 # # Compare with simmr to check it looks the same - it does)
 # simmr_1 <- with(
 #   geese_data,
@@ -254,9 +274,9 @@ sigma = sigma_ans
 #     concentration_means = concentration_means
 #   )
 # )
-# 
+#
 # # MCMC run
 # simmr_1_out <- simmr_mcmc(simmr_1)
-# 
+#
 # # Print it
 # summary(simmr_1_out)

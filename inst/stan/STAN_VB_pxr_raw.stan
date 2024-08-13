@@ -13,6 +13,8 @@ data {
   vector[J] sigma_rate; // Prior rate for sigma
   real<lower=0> not_solo; // Adjustment factor for sigma
   matrix[N, L] X; // Covariates matrix
+  vector[J] omicron_shape; // Prior shape for sigma
+  vector[J] omicron_rate; // Prior rate for sigma
 }
 
 parameters {
@@ -23,6 +25,7 @@ parameters {
 
 transformed parameters {
   vector[J] sigma = 0.001 + not_solo * sigma_raw; // Transform sigma_raw
+  vector[J] omicron;
   matrix[N, K] p; // Main parameter
   matrix[N, J] var_y; // Variance for each group
   matrix[N, K] f; // f matrix for CLR prior on p
@@ -40,7 +43,7 @@ transformed parameters {
   for (i in 1:N) {
     for (j in 1:J) {
       var_y[i,j] = dot_product(square(to_vector(p[i,:]) .* q[:, j]), square(s_sd[:, j]) + square(c_sd[:, j]))
-                / square(dot_product(to_vector(p[i,:]), q[:, j])) + square(sigma[j]);
+                / square(dot_product(to_vector(p[i,:]), q[:, j])) .* square(omicron[j]) + square(sigma[j]);
     }
   }
 
@@ -58,6 +61,7 @@ transformed parameters {
 
   // Prior on sigma_raw
   sigma_raw ~ gamma(sigma_shape, sigma_rate);
+  omicron ~ gamma(omicron_shape, omicron_rate);
 
   // Likelihood
   for (j in 1:J) {

@@ -17,6 +17,8 @@ data {
   matrix[N, L1] X_inner; // Covariates matrix for pack/inside/nested one
   matrix[N, L2] X_outer; // Covariates matrix for pack/inside/nested one
  int<lower=1> region_for_pack[L1];
+  vector[J] omicron_shape; // Prior shape for sigma
+  vector[J] omicron_rate; // Prior rate for sigma
 }
 
 parameters {
@@ -32,6 +34,7 @@ parameters {
 transformed parameters {
   vector[J] sigma = 0.001 + not_solo * sigma_raw; // Transform sigma_raw
  // vector[N] alpha;
+ vector[J] omicron;
   matrix[N, K] p; // Main parameter
   matrix[N, J] var_y; // Variance for each group
   matrix[N, K] f; // f matrix for CLR prior on p
@@ -39,7 +42,7 @@ transformed parameters {
   for (i in 1:N) {
     for (k in 1:K) {
       f[i,k] = dot_product(X_inner[i,:], beta1[k,:]) + dot_product(X_outer[i,:], beta2[k,:]);
-         // f[i,k] = dot_product(X_inner[i,:], beta1[k,:]); 
+         // f[i,k] = dot_product(X_inner[i,:], beta1[k,:]);
 
     }
   }
@@ -51,7 +54,7 @@ transformed parameters {
   for (i in 1:N) {
     for (j in 1:J) {
       var_y[i,j] = dot_product(square(to_vector(p[i,:]) .* q[:, j]), square(s_sd[:, j]) + square(c_sd[:, j]))
-                / square(dot_product(to_vector(p[i,:]), q[:, j])) + square(sigma[j]);
+                / square(dot_product(to_vector(p[i,:]), q[:, j])) .*square(omicron[j]) + square(sigma[j]);
     }
   }
 
@@ -61,36 +64,37 @@ transformed parameters {
   // Prior on beta region
   for (k in 1:K) {
     for (l in 1:L2) {
-    
+
       beta2[k,l] ~ normal(mu_region[k], square(sigma_region[k])); // Prior for beta
 
     }
     mu_region[k] ~ normal(0,1);
-   
+
   }
-  
-  
+
+
   // Prior on beta pack
   // Need to match pack number to region number
-  
+
   for(k in 1:K){
     for(l in 1:L1){
       sigma_pack[k,l] ~ gamma(1,1);
       beta1[k,l] ~ normal(beta2[k,region_for_pack[l]], square(sigma_pack[k,l]));
     }
   }
-  
 
- 
+
+
    //To match mixsiar
-  
-  
+
+
 
 
   // Prior on sigma_raw
   sigma_region ~ gamma(1,1);
 
   sigma_raw ~ gamma(1, 1);
+  omicron ~ gamma(omicron_shape, omicron_rate);
 //  alpha ~ normal(0,1);
 
   // Likelihood

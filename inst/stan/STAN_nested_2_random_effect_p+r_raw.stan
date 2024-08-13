@@ -39,7 +39,7 @@ transformed parameters {
   for (i in 1:N) {
     for (k in 1:K) {
       f[i,k] = dot_product(X_inner[i,:], beta1[k,:]) + dot_product(X_outer[i,:], beta2[k,:]);
-         // f[i,k] = dot_product(X_inner[i,:], beta1[k,:]); 
+         // f[i,k] = dot_product(X_inner[i,:], beta1[k,:]);
 
     }
   }
@@ -61,30 +61,30 @@ transformed parameters {
   // Prior on beta region
   for (k in 1:K) {
     for (l in 1:L2) {
-    
+
       beta2[k,l] ~ normal(mu_region[k], square(sigma_region[k])); // Prior for beta
 
     }
     mu_region[k] ~ normal(0,1);
-   
+
   }
-  
-  
+
+
   // Prior on beta pack
   // Need to match pack number to region number
-  
+
   for(k in 1:K){
     for(l in 1:L1){
       sigma_pack[k,l] ~ gamma(1,1);
       beta1[k,l] ~ normal(beta2[k,region_for_pack[l]], square(sigma_pack[k,l]));
     }
   }
-  
 
- 
+
+
    //To match mixsiar
-  
-  
+
+
 
 
   // Prior on sigma_raw
