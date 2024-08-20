@@ -31,11 +31,11 @@ static constexpr std::array<const char*, 92> locations_array__ =
   {" (found before start of program)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 22, column 2 to column 31)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 23, column 2 to column 32)",
-  " (in 'STAN_nested_1_random_effect_pxr_raw', line 24, column 2 to column 29)",
-  " (in 'STAN_nested_1_random_effect_pxr_raw', line 25, column 2 to column 21)",
-  " (in 'STAN_nested_1_random_effect_pxr_raw', line 26, column 2 to column 22)",
-  " (in 'STAN_nested_1_random_effect_pxr_raw', line 30, column 2 to column 49)",
-  " (in 'STAN_nested_1_random_effect_pxr_raw', line 31, column 2 to column 20)",
+  " (in 'STAN_nested_1_random_effect_pxr_raw', line 24, column 3 to column 30)",
+  " (in 'STAN_nested_1_random_effect_pxr_raw', line 25, column 2 to column 29)",
+  " (in 'STAN_nested_1_random_effect_pxr_raw', line 26, column 2 to column 21)",
+  " (in 'STAN_nested_1_random_effect_pxr_raw', line 27, column 2 to column 22)",
+  " (in 'STAN_nested_1_random_effect_pxr_raw', line 31, column 2 to column 49)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 32, column 2 to column 17)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 33, column 2 to column 21)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 34, column 2 to column 17)",
@@ -47,7 +47,7 @@ static constexpr std::array<const char*, 92> locations_array__ =
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 42, column 4 to column 57)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 41, column 17 to line 43, column 3)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 41, column 2 to line 43, column 3)",
-  " (in 'STAN_nested_1_random_effect_pxr_raw', line 46, column 6 to line 47, column 107)",
+  " (in 'STAN_nested_1_random_effect_pxr_raw', line 46, column 6 to line 47, column 111)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 45, column 19 to line 48, column 5)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 45, column 4 to line 48, column 5)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 44, column 17 to line 49, column 3)",
@@ -107,12 +107,12 @@ static constexpr std::array<const char*, 92> locations_array__ =
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 19, column 2 to column 25)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 22, column 18 to column 19)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 23, column 18 to column 19)",
-  " (in 'STAN_nested_1_random_effect_pxr_raw', line 24, column 18 to column 19)",
-  " (in 'STAN_nested_1_random_effect_pxr_raw', line 25, column 9 to column 10)",
-  " (in 'STAN_nested_1_random_effect_pxr_raw', line 25, column 12 to column 13)",
+  " (in 'STAN_nested_1_random_effect_pxr_raw', line 24, column 19 to column 20)",
+  " (in 'STAN_nested_1_random_effect_pxr_raw', line 25, column 18 to column 19)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 26, column 9 to column 10)",
-  " (in 'STAN_nested_1_random_effect_pxr_raw', line 26, column 12 to column 14)",
-  " (in 'STAN_nested_1_random_effect_pxr_raw', line 30, column 9 to column 10)",
+  " (in 'STAN_nested_1_random_effect_pxr_raw', line 26, column 12 to column 13)",
+  " (in 'STAN_nested_1_random_effect_pxr_raw', line 27, column 9 to column 10)",
+  " (in 'STAN_nested_1_random_effect_pxr_raw', line 27, column 12 to column 14)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 31, column 9 to column 10)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 32, column 9 to column 10)",
   " (in 'STAN_nested_1_random_effect_pxr_raw', line 32, column 12 to column 13)",
@@ -563,19 +563,19 @@ public:
       current_statement__ = 78;
       stan::math::validate_non_negative_index("sigma_pack", "J", J);
       current_statement__ = 79;
-      stan::math::validate_non_negative_index("mu_pack", "K", K);
-      current_statement__ = 80;
-      stan::math::validate_non_negative_index("alpha", "K", K);
-      current_statement__ = 81;
-      stan::math::validate_non_negative_index("alpha", "1", 1);
-      current_statement__ = 82;
-      stan::math::validate_non_negative_index("beta1", "K", K);
-      current_statement__ = 83;
-      stan::math::validate_non_negative_index("beta1", "L1", L1);
-      current_statement__ = 84;
-      stan::math::validate_non_negative_index("sigma", "J", J);
-      current_statement__ = 85;
       stan::math::validate_non_negative_index("omicron", "J", J);
+      current_statement__ = 80;
+      stan::math::validate_non_negative_index("mu_pack", "K", K);
+      current_statement__ = 81;
+      stan::math::validate_non_negative_index("alpha", "K", K);
+      current_statement__ = 82;
+      stan::math::validate_non_negative_index("alpha", "1", 1);
+      current_statement__ = 83;
+      stan::math::validate_non_negative_index("beta1", "K", K);
+      current_statement__ = 84;
+      stan::math::validate_non_negative_index("beta1", "L1", L1);
+      current_statement__ = 85;
+      stan::math::validate_non_negative_index("sigma", "J", J);
       current_statement__ = 86;
       stan::math::validate_non_negative_index("p", "N", N);
       current_statement__ = 87;
@@ -591,7 +591,7 @@ public:
     } catch (const std::exception& e) {
       stan::lang::rethrow_located(e, locations_array__[current_statement__]);
     }
-    num_params_r__ = J + J + K + (K * 1) + (K * L1);
+    num_params_r__ = J + J + J + K + (K * 1) + (K * L1);
   }
   inline std::string model_name() const final {
     return "model_STAN_nested_1_random_effect_pxr_raw";
@@ -632,29 +632,33 @@ public:
       sigma_pack = in__.template read_constrain_lb<
                      Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0,
                      lp__, J);
+      Eigen::Matrix<local_scalar_t__,-1,1> omicron =
+        Eigen::Matrix<local_scalar_t__,-1,1>::Constant(J, DUMMY_VAR__);
+      current_statement__ = 3;
+      omicron = in__.template read_constrain_lb<
+                  Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0, lp__,
+                  J);
       Eigen::Matrix<local_scalar_t__,-1,1> mu_pack =
         Eigen::Matrix<local_scalar_t__,-1,1>::Constant(K, DUMMY_VAR__);
-      current_statement__ = 3;
+      current_statement__ = 4;
       mu_pack = in__.template read_constrain_lb<
                   Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0, lp__,
                   K);
       Eigen::Matrix<local_scalar_t__,-1,-1> alpha =
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(K, 1, DUMMY_VAR__);
-      current_statement__ = 4;
+      current_statement__ = 5;
       alpha = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(K, 1);
       Eigen::Matrix<local_scalar_t__,-1,-1> beta1 =
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(K, L1, DUMMY_VAR__);
-      current_statement__ = 5;
+      current_statement__ = 6;
       beta1 = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(K,
                 L1);
       Eigen::Matrix<local_scalar_t__,-1,1> sigma =
         Eigen::Matrix<local_scalar_t__,-1,1>::Constant(J, DUMMY_VAR__);
-      current_statement__ = 6;
+      current_statement__ = 7;
       stan::model::assign(sigma,
         stan::math::add(0.001, stan::math::multiply(not_solo, sigma_raw)),
         "assigning variable sigma");
-      Eigen::Matrix<local_scalar_t__,-1,1> omicron =
-        Eigen::Matrix<local_scalar_t__,-1,1>::Constant(J, DUMMY_VAR__);
       Eigen::Matrix<local_scalar_t__,-1,-1> p =
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(N, K, DUMMY_VAR__);
       Eigen::Matrix<local_scalar_t__,-1,-1> var_y =
@@ -692,21 +696,22 @@ public:
         for (int j = 1; j <= J; ++j) {
           current_statement__ = 19;
           stan::model::assign(var_y,
-            (((stan::math::dot_product(
-                 stan::math::square(
-                   stan::math::elt_multiply(
-                     stan::math::to_vector(
-                       stan::model::rvalue(p, "p", stan::model::index_uni(i),
-                         stan::model::index_omni())),
-                     stan::model::rvalue(q, "q", stan::model::index_omni(),
-                       stan::model::index_uni(j)))),
-                 stan::math::add(
-                   stan::math::square(
-                     stan::model::rvalue(s_sd, "s_sd",
-                       stan::model::index_omni(), stan::model::index_uni(j))),
-                   stan::math::square(
-                     stan::model::rvalue(c_sd, "c_sd",
-                       stan::model::index_omni(), stan::model::index_uni(j)))))
+            ((((stan::math::dot_product(
+                  stan::math::square(
+                    stan::math::elt_multiply(
+                      stan::math::to_vector(
+                        stan::model::rvalue(p, "p",
+                          stan::model::index_uni(i),
+                          stan::model::index_omni())),
+                      stan::model::rvalue(q, "q", stan::model::index_omni(),
+                        stan::model::index_uni(j)))),
+                  stan::math::add(
+                    stan::math::square(
+                      stan::model::rvalue(s_sd, "s_sd",
+                        stan::model::index_omni(), stan::model::index_uni(j))),
+                    stan::math::square(
+                      stan::model::rvalue(c_sd, "c_sd",
+                        stan::model::index_omni(), stan::model::index_uni(j)))))
             /
             stan::math::square(
               stan::math::dot_product(
@@ -714,10 +719,10 @@ public:
                   stan::model::rvalue(p, "p", stan::model::index_uni(i),
                     stan::model::index_omni())),
                 stan::model::rvalue(q, "q", stan::model::index_omni(),
-                  stan::model::index_uni(j))))) *
-            stan::math::square(
-              stan::model::rvalue(omicron, "omicron",
-                stan::model::index_uni(j)))) +
+                  stan::model::index_uni(j))))) * 1) / (1 +
+            stan::math::exp(
+              -stan::model::rvalue(omicron, "omicron",
+                 stan::model::index_uni(j))))) +
             stan::math::square(
               stan::model::rvalue(sigma, "sigma", stan::model::index_uni(j)))),
             "assigning variable var_y", stan::model::index_uni(i),
@@ -848,28 +853,32 @@ public:
       sigma_pack = in__.template read_constrain_lb<
                      Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0,
                      lp__, J);
+      Eigen::Matrix<double,-1,1> omicron =
+        Eigen::Matrix<double,-1,1>::Constant(J,
+          std::numeric_limits<double>::quiet_NaN());
+      current_statement__ = 3;
+      omicron = in__.template read_constrain_lb<
+                  Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0, lp__,
+                  J);
       Eigen::Matrix<double,-1,1> mu_pack =
         Eigen::Matrix<double,-1,1>::Constant(K,
           std::numeric_limits<double>::quiet_NaN());
-      current_statement__ = 3;
+      current_statement__ = 4;
       mu_pack = in__.template read_constrain_lb<
                   Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0, lp__,
                   K);
       Eigen::Matrix<double,-1,-1> alpha =
         Eigen::Matrix<double,-1,-1>::Constant(K, 1,
           std::numeric_limits<double>::quiet_NaN());
-      current_statement__ = 4;
+      current_statement__ = 5;
       alpha = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(K, 1);
       Eigen::Matrix<double,-1,-1> beta1 =
         Eigen::Matrix<double,-1,-1>::Constant(K, L1,
           std::numeric_limits<double>::quiet_NaN());
-      current_statement__ = 5;
+      current_statement__ = 6;
       beta1 = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(K,
                 L1);
       Eigen::Matrix<double,-1,1> sigma =
-        Eigen::Matrix<double,-1,1>::Constant(J,
-          std::numeric_limits<double>::quiet_NaN());
-      Eigen::Matrix<double,-1,1> omicron =
         Eigen::Matrix<double,-1,1>::Constant(J,
           std::numeric_limits<double>::quiet_NaN());
       Eigen::Matrix<double,-1,-1> p =
@@ -883,6 +892,7 @@ public:
           std::numeric_limits<double>::quiet_NaN());
       out__.write(sigma_raw);
       out__.write(sigma_pack);
+      out__.write(omicron);
       out__.write(mu_pack);
       out__.write(alpha);
       out__.write(beta1);
@@ -891,7 +901,7 @@ public:
             stan::math::primitive_value(emit_generated_quantities__)))) {
         return ;
       }
-      current_statement__ = 6;
+      current_statement__ = 7;
       stan::model::assign(sigma,
         stan::math::add(0.001, stan::math::multiply(not_solo, sigma_raw)),
         "assigning variable sigma");
@@ -926,21 +936,22 @@ public:
         for (int j = 1; j <= J; ++j) {
           current_statement__ = 19;
           stan::model::assign(var_y,
-            (((stan::math::dot_product(
-                 stan::math::square(
-                   stan::math::elt_multiply(
-                     stan::math::to_vector(
-                       stan::model::rvalue(p, "p", stan::model::index_uni(i),
-                         stan::model::index_omni())),
-                     stan::model::rvalue(q, "q", stan::model::index_omni(),
-                       stan::model::index_uni(j)))),
-                 stan::math::add(
-                   stan::math::square(
-                     stan::model::rvalue(s_sd, "s_sd",
-                       stan::model::index_omni(), stan::model::index_uni(j))),
-                   stan::math::square(
-                     stan::model::rvalue(c_sd, "c_sd",
-                       stan::model::index_omni(), stan::model::index_uni(j)))))
+            ((((stan::math::dot_product(
+                  stan::math::square(
+                    stan::math::elt_multiply(
+                      stan::math::to_vector(
+                        stan::model::rvalue(p, "p",
+                          stan::model::index_uni(i),
+                          stan::model::index_omni())),
+                      stan::model::rvalue(q, "q", stan::model::index_omni(),
+                        stan::model::index_uni(j)))),
+                  stan::math::add(
+                    stan::math::square(
+                      stan::model::rvalue(s_sd, "s_sd",
+                        stan::model::index_omni(), stan::model::index_uni(j))),
+                    stan::math::square(
+                      stan::model::rvalue(c_sd, "c_sd",
+                        stan::model::index_omni(), stan::model::index_uni(j)))))
             /
             stan::math::square(
               stan::math::dot_product(
@@ -948,10 +959,10 @@ public:
                   stan::model::rvalue(p, "p", stan::model::index_uni(i),
                     stan::model::index_omni())),
                 stan::model::rvalue(q, "q", stan::model::index_omni(),
-                  stan::model::index_uni(j))))) *
-            stan::math::square(
-              stan::model::rvalue(omicron, "omicron",
-                stan::model::index_uni(j)))) +
+                  stan::model::index_uni(j))))) * 1) / (1 +
+            stan::math::exp(
+              -stan::model::rvalue(omicron, "omicron",
+                 stan::model::index_uni(j))))) +
             stan::math::square(
               stan::model::rvalue(sigma, "sigma", stan::model::index_uni(j)))),
             "assigning variable var_y", stan::model::index_uni(i),
@@ -960,7 +971,6 @@ public:
       }
       if (emit_transformed_parameters__) {
         out__.write(sigma);
-        out__.write(omicron);
         out__.write(p);
         out__.write(var_y);
         out__.write(f);
@@ -1002,23 +1012,30 @@ public:
         in__.read<Eigen::Matrix<local_scalar_t__,-1,1>>(J),
         "assigning variable sigma_pack");
       out__.write_free_lb(0, sigma_pack);
+      Eigen::Matrix<local_scalar_t__,-1,1> omicron =
+        Eigen::Matrix<local_scalar_t__,-1,1>::Constant(J, DUMMY_VAR__);
+      current_statement__ = 3;
+      stan::model::assign(omicron,
+        in__.read<Eigen::Matrix<local_scalar_t__,-1,1>>(J),
+        "assigning variable omicron");
+      out__.write_free_lb(0, omicron);
       Eigen::Matrix<local_scalar_t__,-1,1> mu_pack =
         Eigen::Matrix<local_scalar_t__,-1,1>::Constant(K, DUMMY_VAR__);
-      current_statement__ = 3;
+      current_statement__ = 4;
       stan::model::assign(mu_pack,
         in__.read<Eigen::Matrix<local_scalar_t__,-1,1>>(K),
         "assigning variable mu_pack");
       out__.write_free_lb(0, mu_pack);
       Eigen::Matrix<local_scalar_t__,-1,-1> alpha =
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(K, 1, DUMMY_VAR__);
-      current_statement__ = 4;
+      current_statement__ = 5;
       stan::model::assign(alpha,
         in__.read<Eigen::Matrix<local_scalar_t__,-1,-1>>(K, 1),
         "assigning variable alpha");
       out__.write(alpha);
       Eigen::Matrix<local_scalar_t__,-1,-1> beta1 =
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(K, L1, DUMMY_VAR__);
-      current_statement__ = 5;
+      current_statement__ = 6;
       stan::model::assign(beta1,
         in__.read<Eigen::Matrix<local_scalar_t__,-1,-1>>(K, L1),
         "assigning variable beta1");
@@ -1045,12 +1062,15 @@ public:
       context__.validate_dims("parameter initialization", "sigma_pack",
         "double", std::vector<size_t>{static_cast<size_t>(J)});
       current_statement__ = 3;
+      context__.validate_dims("parameter initialization", "omicron",
+        "double", std::vector<size_t>{static_cast<size_t>(J)});
+      current_statement__ = 4;
       context__.validate_dims("parameter initialization", "mu_pack",
         "double", std::vector<size_t>{static_cast<size_t>(K)});
-      current_statement__ = 4;
+      current_statement__ = 5;
       context__.validate_dims("parameter initialization", "alpha", "double",
         std::vector<size_t>{static_cast<size_t>(K), static_cast<size_t>(1)});
-      current_statement__ = 5;
+      current_statement__ = 6;
       context__.validate_dims("parameter initialization", "beta1", "double",
         std::vector<size_t>{static_cast<size_t>(K), static_cast<size_t>(L1)});
       int pos__ = std::numeric_limits<int>::min();
@@ -1091,20 +1111,38 @@ public:
         }
       }
       out__.write_free_lb(0, sigma_pack);
+      Eigen::Matrix<local_scalar_t__,-1,1> omicron =
+        Eigen::Matrix<local_scalar_t__,-1,1>::Constant(J, DUMMY_VAR__);
+      {
+        std::vector<local_scalar_t__> omicron_flat__;
+        current_statement__ = 3;
+        omicron_flat__ = context__.vals_r("omicron");
+        current_statement__ = 3;
+        pos__ = 1;
+        current_statement__ = 3;
+        for (int sym1__ = 1; sym1__ <= J; ++sym1__) {
+          current_statement__ = 3;
+          stan::model::assign(omicron, omicron_flat__[(pos__ - 1)],
+            "assigning variable omicron", stan::model::index_uni(sym1__));
+          current_statement__ = 3;
+          pos__ = (pos__ + 1);
+        }
+      }
+      out__.write_free_lb(0, omicron);
       Eigen::Matrix<local_scalar_t__,-1,1> mu_pack =
         Eigen::Matrix<local_scalar_t__,-1,1>::Constant(K, DUMMY_VAR__);
       {
         std::vector<local_scalar_t__> mu_pack_flat__;
-        current_statement__ = 3;
+        current_statement__ = 4;
         mu_pack_flat__ = context__.vals_r("mu_pack");
-        current_statement__ = 3;
+        current_statement__ = 4;
         pos__ = 1;
-        current_statement__ = 3;
+        current_statement__ = 4;
         for (int sym1__ = 1; sym1__ <= K; ++sym1__) {
-          current_statement__ = 3;
+          current_statement__ = 4;
           stan::model::assign(mu_pack, mu_pack_flat__[(pos__ - 1)],
             "assigning variable mu_pack", stan::model::index_uni(sym1__));
-          current_statement__ = 3;
+          current_statement__ = 4;
           pos__ = (pos__ + 1);
         }
       }
@@ -1113,19 +1151,19 @@ public:
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(K, 1, DUMMY_VAR__);
       {
         std::vector<local_scalar_t__> alpha_flat__;
-        current_statement__ = 4;
+        current_statement__ = 5;
         alpha_flat__ = context__.vals_r("alpha");
-        current_statement__ = 4;
+        current_statement__ = 5;
         pos__ = 1;
-        current_statement__ = 4;
+        current_statement__ = 5;
         for (int sym1__ = 1; sym1__ <= 1; ++sym1__) {
-          current_statement__ = 4;
+          current_statement__ = 5;
           for (int sym2__ = 1; sym2__ <= K; ++sym2__) {
-            current_statement__ = 4;
+            current_statement__ = 5;
             stan::model::assign(alpha, alpha_flat__[(pos__ - 1)],
               "assigning variable alpha", stan::model::index_uni(sym2__),
               stan::model::index_uni(sym1__));
-            current_statement__ = 4;
+            current_statement__ = 5;
             pos__ = (pos__ + 1);
           }
         }
@@ -1135,19 +1173,19 @@ public:
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(K, L1, DUMMY_VAR__);
       {
         std::vector<local_scalar_t__> beta1_flat__;
-        current_statement__ = 5;
+        current_statement__ = 6;
         beta1_flat__ = context__.vals_r("beta1");
-        current_statement__ = 5;
+        current_statement__ = 6;
         pos__ = 1;
-        current_statement__ = 5;
+        current_statement__ = 6;
         for (int sym1__ = 1; sym1__ <= L1; ++sym1__) {
-          current_statement__ = 5;
+          current_statement__ = 6;
           for (int sym2__ = 1; sym2__ <= K; ++sym2__) {
-            current_statement__ = 5;
+            current_statement__ = 6;
             stan::model::assign(beta1, beta1_flat__[(pos__ - 1)],
               "assigning variable beta1", stan::model::index_uni(sym2__),
               stan::model::index_uni(sym1__));
-            current_statement__ = 5;
+            current_statement__ = 6;
             pos__ = (pos__ + 1);
           }
         }
@@ -1161,10 +1199,10 @@ public:
   get_param_names(std::vector<std::string>& names__, const bool
                   emit_transformed_parameters__ = true, const bool
                   emit_generated_quantities__ = true) const {
-    names__ = std::vector<std::string>{"sigma_raw", "sigma_pack", "mu_pack",
-                "alpha", "beta1"};
+    names__ = std::vector<std::string>{"sigma_raw", "sigma_pack", "omicron",
+                "mu_pack", "alpha", "beta1"};
     if (emit_transformed_parameters__) {
-      std::vector<std::string> temp{"sigma", "omicron", "p", "var_y", "f"};
+      std::vector<std::string> temp{"sigma", "p", "var_y", "f"};
       names__.reserve(names__.size() + temp.size());
       names__.insert(names__.end(), temp.begin(), temp.end());
     }
@@ -1177,6 +1215,7 @@ public:
     dimss__ = std::vector<std::vector<size_t>>{std::vector<size_t>{static_cast<
                                                                     size_t>(J)},
                 std::vector<size_t>{static_cast<size_t>(J)},
+                std::vector<size_t>{static_cast<size_t>(J)},
                 std::vector<size_t>{static_cast<size_t>(K)},
                 std::vector<size_t>{static_cast<size_t>(K),
                   static_cast<size_t>(1)},
@@ -1185,7 +1224,6 @@ public:
     if (emit_transformed_parameters__) {
       std::vector<std::vector<size_t>>
         temp{std::vector<size_t>{static_cast<size_t>(J)},
-             std::vector<size_t>{static_cast<size_t>(J)},
              std::vector<size_t>{static_cast<size_t>(N),
                static_cast<size_t>(K)},
              std::vector<size_t>{static_cast<size_t>(N),
@@ -1209,6 +1247,10 @@ public:
       param_names__.emplace_back(std::string() + "sigma_pack" + '.' +
         std::to_string(sym1__));
     }
+    for (int sym1__ = 1; sym1__ <= J; ++sym1__) {
+      param_names__.emplace_back(std::string() + "omicron" + '.' +
+        std::to_string(sym1__));
+    }
     for (int sym1__ = 1; sym1__ <= K; ++sym1__) {
       param_names__.emplace_back(std::string() + "mu_pack" + '.' +
         std::to_string(sym1__));
@@ -1228,10 +1270,6 @@ public:
     if (emit_transformed_parameters__) {
       for (int sym1__ = 1; sym1__ <= J; ++sym1__) {
         param_names__.emplace_back(std::string() + "sigma" + '.' +
-          std::to_string(sym1__));
-      }
-      for (int sym1__ = 1; sym1__ <= J; ++sym1__) {
-        param_names__.emplace_back(std::string() + "omicron" + '.' +
           std::to_string(sym1__));
       }
       for (int sym1__ = 1; sym1__ <= K; ++sym1__) {
@@ -1267,6 +1305,10 @@ public:
       param_names__.emplace_back(std::string() + "sigma_pack" + '.' +
         std::to_string(sym1__));
     }
+    for (int sym1__ = 1; sym1__ <= J; ++sym1__) {
+      param_names__.emplace_back(std::string() + "omicron" + '.' +
+        std::to_string(sym1__));
+    }
     for (int sym1__ = 1; sym1__ <= K; ++sym1__) {
       param_names__.emplace_back(std::string() + "mu_pack" + '.' +
         std::to_string(sym1__));
@@ -1286,10 +1328,6 @@ public:
     if (emit_transformed_parameters__) {
       for (int sym1__ = 1; sym1__ <= J; ++sym1__) {
         param_names__.emplace_back(std::string() + "sigma" + '.' +
-          std::to_string(sym1__));
-      }
-      for (int sym1__ = 1; sym1__ <= J; ++sym1__) {
-        param_names__.emplace_back(std::string() + "omicron" + '.' +
           std::to_string(sym1__));
       }
       for (int sym1__ = 1; sym1__ <= K; ++sym1__) {
@@ -1314,10 +1352,10 @@ public:
     if (emit_generated_quantities__) {}
   }
   inline std::string get_constrained_sizedtypes() const {
-    return std::string("[{\"name\":\"sigma_raw\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"parameters\"},{\"name\":\"sigma_pack\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"parameters\"},{\"name\":\"mu_pack\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(K) + "},\"block\":\"parameters\"},{\"name\":\"alpha\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(K) + ",\"cols\":" + std::to_string(1) + "},\"block\":\"parameters\"},{\"name\":\"beta1\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(K) + ",\"cols\":" + std::to_string(L1) + "},\"block\":\"parameters\"},{\"name\":\"sigma\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"transformed_parameters\"},{\"name\":\"omicron\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"transformed_parameters\"},{\"name\":\"p\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(N) + ",\"cols\":" + std::to_string(K) + "},\"block\":\"transformed_parameters\"},{\"name\":\"var_y\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(N) + ",\"cols\":" + std::to_string(J) + "},\"block\":\"transformed_parameters\"},{\"name\":\"f\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(N) + ",\"cols\":" + std::to_string(K) + "},\"block\":\"transformed_parameters\"}]");
+    return std::string("[{\"name\":\"sigma_raw\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"parameters\"},{\"name\":\"sigma_pack\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"parameters\"},{\"name\":\"omicron\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"parameters\"},{\"name\":\"mu_pack\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(K) + "},\"block\":\"parameters\"},{\"name\":\"alpha\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(K) + ",\"cols\":" + std::to_string(1) + "},\"block\":\"parameters\"},{\"name\":\"beta1\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(K) + ",\"cols\":" + std::to_string(L1) + "},\"block\":\"parameters\"},{\"name\":\"sigma\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"transformed_parameters\"},{\"name\":\"p\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(N) + ",\"cols\":" + std::to_string(K) + "},\"block\":\"transformed_parameters\"},{\"name\":\"var_y\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(N) + ",\"cols\":" + std::to_string(J) + "},\"block\":\"transformed_parameters\"},{\"name\":\"f\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(N) + ",\"cols\":" + std::to_string(K) + "},\"block\":\"transformed_parameters\"}]");
   }
   inline std::string get_unconstrained_sizedtypes() const {
-    return std::string("[{\"name\":\"sigma_raw\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"parameters\"},{\"name\":\"sigma_pack\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"parameters\"},{\"name\":\"mu_pack\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(K) + "},\"block\":\"parameters\"},{\"name\":\"alpha\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(K) + ",\"cols\":" + std::to_string(1) + "},\"block\":\"parameters\"},{\"name\":\"beta1\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(K) + ",\"cols\":" + std::to_string(L1) + "},\"block\":\"parameters\"},{\"name\":\"sigma\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"transformed_parameters\"},{\"name\":\"omicron\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"transformed_parameters\"},{\"name\":\"p\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(N) + ",\"cols\":" + std::to_string(K) + "},\"block\":\"transformed_parameters\"},{\"name\":\"var_y\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(N) + ",\"cols\":" + std::to_string(J) + "},\"block\":\"transformed_parameters\"},{\"name\":\"f\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(N) + ",\"cols\":" + std::to_string(K) + "},\"block\":\"transformed_parameters\"}]");
+    return std::string("[{\"name\":\"sigma_raw\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"parameters\"},{\"name\":\"sigma_pack\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"parameters\"},{\"name\":\"omicron\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"parameters\"},{\"name\":\"mu_pack\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(K) + "},\"block\":\"parameters\"},{\"name\":\"alpha\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(K) + ",\"cols\":" + std::to_string(1) + "},\"block\":\"parameters\"},{\"name\":\"beta1\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(K) + ",\"cols\":" + std::to_string(L1) + "},\"block\":\"parameters\"},{\"name\":\"sigma\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(J) + "},\"block\":\"transformed_parameters\"},{\"name\":\"p\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(N) + ",\"cols\":" + std::to_string(K) + "},\"block\":\"transformed_parameters\"},{\"name\":\"var_y\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(N) + ",\"cols\":" + std::to_string(J) + "},\"block\":\"transformed_parameters\"},{\"name\":\"f\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(N) + ",\"cols\":" + std::to_string(K) + "},\"block\":\"transformed_parameters\"}]");
   }
   // Begin method overload boilerplate
   template <typename RNG> inline void
@@ -1326,9 +1364,9 @@ public:
               emit_transformed_parameters = true, const bool
               emit_generated_quantities = true, std::ostream*
               pstream = nullptr) const {
-    const size_t num_params__ = ((((J + J) + K) + (K * 1)) + (K * L1));
-    const size_t num_transformed = emit_transformed_parameters * (((((J + J)
-      + (N * K)) + (N * J)) + (N * K)));
+    const size_t num_params__ = (((((J + J) + J) + K) + (K * 1)) + (K * L1));
+    const size_t num_transformed = emit_transformed_parameters * ((((J + (N *
+      K)) + (N * J)) + (N * K)));
     const size_t num_gen_quantities = emit_generated_quantities * (0);
     const size_t num_to_write = num_params__ + num_transformed +
       num_gen_quantities;
@@ -1344,9 +1382,9 @@ public:
               emit_transformed_parameters = true, bool
               emit_generated_quantities = true, std::ostream*
               pstream = nullptr) const {
-    const size_t num_params__ = ((((J + J) + K) + (K * 1)) + (K * L1));
-    const size_t num_transformed = emit_transformed_parameters * (((((J + J)
-      + (N * K)) + (N * J)) + (N * K)));
+    const size_t num_params__ = (((((J + J) + J) + K) + (K * 1)) + (K * L1));
+    const size_t num_transformed = emit_transformed_parameters * ((((J + (N *
+      K)) + (N * J)) + (N * K)));
     const size_t num_gen_quantities = emit_generated_quantities * (0);
     const size_t num_to_write = num_params__ + num_transformed +
       num_gen_quantities;

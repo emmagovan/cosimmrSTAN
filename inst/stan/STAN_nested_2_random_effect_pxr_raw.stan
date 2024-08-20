@@ -22,29 +22,33 @@ data {
 }
 
 parameters {
-  vector<lower=0>[J] sigma_raw; // log raw sigma values
- matrix<lower=0>[K, L1] sigma_pack; // log raw sigma values
- vector<lower=0>[K] sigma_region; // log raw sigma values
-  vector<lower=0>[K] mu_region; // mean for beta1
-  matrix[K, L1] beta1; // Matrix of coefficients for inside values (also have intercept here I guess??)
-   matrix[K, L2] beta2; // Matrix of coefficients for outside values
-
+vector<lower=0>[J] sigma_raw; // log raw sigma values
+matrix<lower=0>[K, L1] sigma_pack; // log raw sigma values
+//vector<lower=0>[K] sigma_region; // log raw sigma values
+vector<lower=0>[K] mu_region; // mean for beta1
+vector<lower=0>[J] omicron;
+matrix[K, L1] beta1; // Matrix of coefficients for inside values (also have intercept here I guess??)
+matrix[K, L2] beta2; // Matrix of coefficients for outside values
+real<lower=0> log_sigma_region[K]; // model log(sigma_region)
 }
 
 transformed parameters {
   vector[J] sigma = 0.001 + not_solo * sigma_raw; // Transform sigma_raw
- // vector[N] alpha;
- vector[J] omicron;
   matrix[N, K] p; // Main parameter
   matrix[N, J] var_y; // Variance for each group
   matrix[N, K] f; // f matrix for CLR prior on p
+  vector[K] sigma_region;
 
   for (i in 1:N) {
     for (k in 1:K) {
       f[i,k] = dot_product(X_inner[i,:], beta1[k,:]) + dot_product(X_outer[i,:], beta2[k,:]);
-         // f[i,k] = dot_product(X_inner[i,:], beta1[k,:]);
+
 
     }
+  }
+
+  for(k in 1:K){
+    sigma_region[k] = exp(log_sigma_region[k]);
   }
 
   for (i in 1:N) {
@@ -53,8 +57,8 @@ transformed parameters {
 
   for (i in 1:N) {
     for (j in 1:J) {
-      var_y[i,j] = dot_product(square(to_vector(p[i,:]) .* q[:, j]), square(s_sd[:, j]) + square(c_sd[:, j]))
-                / square(dot_product(to_vector(p[i,:]), q[:, j])) .*square(omicron[j]) + square(sigma[j]);
+      var_y[i,j] = (dot_product(square(to_vector(p[i,:]) .* q[:, j]), square(s_sd[:, j]) + square(c_sd[:, j]))
+                / square(dot_product(to_vector(p[i,:]), q[:, j])))*1/(1+exp(-omicron[j]))  + square(sigma[j]); //
     }
   }
 
@@ -78,23 +82,18 @@ transformed parameters {
 
   for(k in 1:K){
     for(l in 1:L1){
-      sigma_pack[k,l] ~ gamma(1,1);
+     sigma_pack[k,l] ~ gamma(1,1);
       beta1[k,l] ~ normal(beta2[k,region_for_pack[l]], square(sigma_pack[k,l]));
     }
   }
 
 
-
-   //To match mixsiar
-
-
-
-
   // Prior on sigma_raw
-  sigma_region ~ gamma(1,1);
 
+  //sigma_region ~ gamma(1,1);
+log_sigma_region ~ gamma(1,1);
   sigma_raw ~ gamma(1, 1);
-  omicron ~ gamma(omicron_shape, omicron_rate);
+  omicron ~ gamma(1, 1);
 //  alpha ~ normal(0,1);
 
   // Likelihood

@@ -20,12 +20,12 @@ data {
 parameters {
   vector<lower=0>[J] sigma_raw; // log raw sigma values
   matrix[K, L] beta; // Matrix of coefficients
+   vector<lower=0>[J] omicron;
   // matrix[N, K] f; // f matrix for CLR prior on p
 }
 
 transformed parameters {
   vector[J] sigma = 0.001 + not_solo * sigma_raw; // Transform sigma_raw
-  vector[J] omicron;
   matrix[N, K] p; // Main parameter
   matrix[N, J] var_y; // Variance for each group
   matrix[N, K] f; // f matrix for CLR prior on p
@@ -42,8 +42,8 @@ transformed parameters {
 
   for (i in 1:N) {
     for (j in 1:J) {
-      var_y[i,j] = dot_product(square(to_vector(p[i,:]) .* q[:, j]), square(s_sd[:, j]) + square(c_sd[:, j]))
-                / square(dot_product(to_vector(p[i,:]), q[:, j])) .* square(omicron[j]) + square(sigma[j]);
+      var_y[i,j] = (dot_product(square(to_vector(p[i,:]) .* q[:, j]), square(s_sd[:, j]) + square(c_sd[:, j]))
+                / square(dot_product(to_vector(p[i,:]), q[:, j])))* 1/(1+exp(-omicron[j])) + square(sigma[j]);
     }
   }
 
