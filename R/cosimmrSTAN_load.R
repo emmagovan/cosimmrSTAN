@@ -101,7 +101,7 @@ random_effects = FALSE,
 hierarchical_fitting = FALSE,
 shape_sig = 1) {
   # Function to load in data for simmr and check whether it's appropriate for running through simmr_mcmc
-
+#  options(mc.cores = parallel::detectCores())
   if(random_effects == TRUE){
     scaled_center = NULL
     scaled_scale = NULL
@@ -359,8 +359,8 @@ shape_sig = 1) {
       stanmodels$raw_source,
       data = stan_dat,
       seed = 1,
-      iter = 1000
-    )
+      iter = 1000,
+      cores = 1)
 
     extracted_mcmc = extract(fit_mcmc)
 
@@ -398,12 +398,14 @@ shape_sig = 1) {
     )
 
 
-
-    fit_mcmc<- sampling(
-      stanmodels$Hierarchical,
+model = cosimmrSTAN:::stanmodels$Hierarchical
+    #rstan::rstan_options(auto_write = TRUE)
+    fit_mcmc<- rstan::sampling(
+      model,
       data = stan_dat,
       seed = 1,
-      iter = 1000
+      iter = 1000,
+      cores = 1
     )
 
     extracted_mcmc = extract(fit_mcmc)

@@ -95,7 +95,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
                          ){
 
   #Core detection - potentially have this as an option people can turn on and off?
-  options(mc.cores = parallel::detectCores())
+  # options(mc.cores = parallel::detectCores())
 
   #Need loops for error type
 
@@ -115,7 +115,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
     if(cosimmrSTAN_in$random_effects == TRUE){
       if(cosimmrSTAN_in$nested == TRUE){
         if(error_type == "processxresidual"){
-          #This is nested random effects pxr
+          #This is nested random effects pxr WORKING
           inner_original = cosimmrSTAN_in$original_x[,2]
           outer_original = cosimmrSTAN_in$original_x[,1]
 
@@ -149,7 +149,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             c_sd = cosimmrSTAN_in$correction_sds,
             sigma_shape = prior_control$sigma_shape,
             sigma_rate = prior_control$sigma_rate,
-            not_solo = 1,
+            not_solo = solo,
             X_intercept = cosimmrSTAN_in$X_intercept,
             X_inner = cosimmrSTAN_in$X_inner,
             X_outer = cosimmrSTAN_in$X_region,
@@ -159,48 +159,50 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           )
 
        model = stanmodels$STAN_nested_2_random_effect_pxr_raw
- #   model = stanmodels$2pxr
-       model = stanmode
 
-          fit_opt <- rstan::optimizing(model,
-                                       data = stan_dat)
-
-
-          which_beta1 <- grep('beta1', names(fit_opt$par))
-          which_beta1 <- grep('beta2', names(fit_opt$par))
-
-
-          which_sigma <- grep('sigma', names(fit_opt$par))
-
-          alpha_start_opt <- structure(fit_opt$par[which_alpha],
-                                       dim  = c(stan_dat$K, 1))
-
-          beta1_start_opt <- structure(fit_opt$par[which_beta1],
-                                       dim  = c(stan_dat$K, stan_dat$L1))
-
-          beta1_start_opt <- structure(fit_opt$par[which_beta2],
-                                       dim  = c(stan_dat$K, stan_dat$L2))
-
-
-
-          sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
+#
+#           fit_opt <- rstan::optimizing(model,
+#                                        data = stan_dat)
+#
+#
+#           which_beta1 <- grep('beta1', names(fit_opt$par))
+#
+#
+#           which_beta2 <- grep('beta2', names(fit_opt$par))
+#
+#
+#           which_sigma <- grep('sigma', names(fit_opt$par))
+#
+#           which_omicron <- grep('omicron', names(fit_opt$par))
+#
+#
+#           beta1_start_opt <- structure(fit_opt$par[which_beta1],
+#                                        dim  = c(stan_dat$K, stan_dat$L1))
+#
+#           beta2_start_opt <- structure(fit_opt$par[which_beta2],
+#                                        dim  = c(stan_dat$K, stan_dat$L2))
+#
+#
+#
+#           sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
 
 
           fit_vb <- rstan::vb(
             model, data = stan_dat,
             algorithm = 'fullrank',
-            pars = c('beta1', 'beta2', 'sigma'),
+            pars = c('beta1', 'beta2', 'sigma', 'omicron'),
             tol_rel_obj = 0.000001, #convergence tolerance on the relative norm of the objective
             output_samples = 3600
           )
 
+          extracted_samples = rstan::extract(fit_vb)
 
           #Want to extract all the betas in a sensible way first I think
           #alpha_ans = extracted_samples$alpha
           beta1_ans = extracted_samples$beta1 # This is n_samples * K * n_covariates
           beta2_ans = extracted_samples$beta2
           sigma_ans = extracted_samples$sigma
-
+          omicron_ans = extracted_samples$omicron
 
           #CONVERT TO F
           #f is x_inner * beta1 + x_outer * beta_2
@@ -210,7 +212,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           for(i in 1:cosimmrSTAN_in$n_obs){
             for(k in 1: cosimmrSTAN_in$n_sources){
               for(s in 1:3600){
-                f[i,k,s] =  X_inner[i,] %*% beta1_ans[s,k,] + X_region[i,] %*% beta2_ans[s,k,]
+                f[i,k,s] =  cosimmrSTAN_in$X_inner[i,] %*% beta1_ans[s,k,] + cosimmrSTAN_in$X_region[i,] %*% beta2_ans[s,k,]
               }
             }
           }
@@ -263,7 +265,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             c_sd = cosimmrSTAN_in$correction_sds,
             sigma_shape = prior_control$sigma_shape,
             sigma_rate = prior_control$sigma_rate,
-            not_solo = 0,
+            not_solo = solo,
             X_intercept = cosimmrSTAN_in$X_intercept,
             X_inner = cosimmrSTAN_in$X_inner,
             X_outer = cosimmrSTAN_in$X_region,
@@ -272,44 +274,42 @@ cosimmr_stan <- function(cosimmrSTAN_in,
 
           model = stanmodels$STAN_nested_2_random_effect_pandr_raw
 
-          fit_opt <- rstan::optimizing(model,
-                                       data = stan_dat)
-
-          which_alpha <- grep('alpha', names(fit_opt$par))
-          which_beta1 <- grep('beta1', names(fit_opt$par))
-
-
-          which_sigma <- grep('sigma', names(fit_opt$par))
-
-          alpha_start_opt <- structure(fit_opt$par[which_alpha],
-                                       dim  = c(stan_dat$K, 1))
-
-          beta1_start_opt <- structure(fit_opt$par[which_beta1],
-                                       dim  = c(stan_dat$K, stan_dat$L1))
-
-
-
-          sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
+          # fit_opt <- rstan::optimizing(model,
+          #                              data = stan_dat)
+          #
+          # which_alpha <- grep('alpha', names(fit_opt$par))
+          # which_beta1 <- grep('beta1', names(fit_opt$par))
+          #
+          #
+          # which_sigma <- grep('sigma', names(fit_opt$par))
+          #
+          # alpha_start_opt <- structure(fit_opt$par[which_alpha],
+          #                              dim  = c(stan_dat$K, 1))
+          #
+          # beta1_start_opt <- structure(fit_opt$par[which_beta1],
+          #                              dim  = c(stan_dat$K, stan_dat$L1))
+          #
+          #
+          #
+          # sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
 
 
           fit_vb <- rstan::vb(
             model, data = stan_dat,
             algorithm = 'fullrank',
-            pars = c('alpha', 'beta1', 'sigma'),
-            init = list('alpha' = alpha_start_opt,
-                        'beta1' = beta1_start_opt,
-                        'log_sigma_raw' = sigma_raw_start_opt),
+            pars = c('beta1', 'beta2', 'sigma'),
             tol_rel_obj = 0.000001, #convergence tolerance on the relative norm of the objective
             output_samples = 3600
           )
 
+          extracted_samples = rstan::extract(fit_vb)
 
           #Want to extract all the betas in a sensible way first I think
           #alpha_ans = extracted_samples$alpha
           beta1_ans = extracted_samples$beta1 # This is n_samples * K * n_covariates
           beta2_ans = extracted_samples$beta2
           sigma_ans = extracted_samples$sigma
-
+          omicron_ans = NULL
 
           #CONVERT TO F
           #f is x_inner * beta1 + x_outer * beta_2
@@ -319,7 +319,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           for(i in 1:cosimmrSTAN_in$n_obs){
             for(k in 1: cosimmrSTAN_in$n_sources){
               for(s in 1:3600){
-                f[i,k,s] =  X_inner[i,] %*% beta1_ans[s,k,] + X_region[i,] %*% beta2_ans[s,k,]
+                f[i,k,s] =  cosimmrSTAN_in$X_inner[i,] %*% beta1_ans[s,k,] + cosimmrSTAN_in$X_region[i,] %*% beta2_ans[s,k,]
               }
             }
           }
@@ -333,6 +333,605 @@ cosimmr_stan <- function(cosimmrSTAN_in,
               p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
             }
           }
+
+
+
+
+
+          #Then each p is sum f / sum exp f
+
+        }
+      }else if(cosimmrSTAN_in$nested == FALSE){
+        if(error_type == "processxresidual"){
+          #This is not nested random effects pxr WORKING
+          stan_dat = list(
+            J = cosimmrSTAN_in$n_tracers,
+            N = cosimmrSTAN_in$n_obs,
+            K = cosimmrSTAN_in$n_sources,
+            L1 = ncol(cosimmrSTAN_in$X_inner),
+            L2 = 1,
+            y = cosimmrSTAN_in$mixtures,
+            q = cosimmrSTAN_in$concentration_means,
+            s_mean = cosimmrSTAN_in$source_means,
+            c_mean = cosimmrSTAN_in$correction_means,
+            s_sd = cosimmrSTAN_in$source_sds,
+            c_sd = cosimmrSTAN_in$correction_sds,
+            sigma_shape = prior_control$sigma_shape,
+            sigma_rate = prior_control$sigma_rate,
+            not_solo = solo,
+            X_intercept = cosimmrSTAN_in$X_intercept,
+            X_inner = cosimmrSTAN_in$X_inner,
+            omicron_shape = prior_control$omicron_shape,
+            omicron_rate = prior_control$omicron_rate
+          )
+
+
+          model = stanmodels$STAN_nested_1_random_effect_pxr_raw
+
+
+          # fit_opt <- rstan::optimizing(model,
+          #                              data = stan_dat)
+          #
+          # which_alpha <- grep('alpha', names(fit_opt$par))
+          # which_beta1 <- grep('beta1', names(fit_opt$par))
+          #
+          #
+          # which_sigma <- grep('sigma', names(fit_opt$par))
+          #
+          # alpha_start_opt <- structure(fit_opt$par[which_alpha],
+          #                              dim  = c(stan_dat$K, 1))
+          #
+          # beta1_start_opt <- structure(fit_opt$par[which_beta1],
+          #                              dim  = c(stan_dat$K, stan_dat$L1))
+          #
+          #
+          #
+          # sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
+
+
+          fit_vb <- rstan::vb(
+            model, data = stan_dat,
+            algorithm = 'fullrank',
+            pars = c('beta1', 'sigma', 'omicron'),
+            tol_rel_obj = 0.000001, #convergence tolerance on the relative norm of the objective
+            output_samples = 3600
+          )
+
+          extracted_samples = rstan::extract(fit_vb)
+
+          #Want to extract all the betas in a sensible way first I think
+          #alpha_ans = extracted_samples$alpha
+          beta1_ans = extracted_samples$beta1 # This is n_samples * K * n_covariates
+          beta2_ans = NULL
+          sigma_ans = extracted_samples$sigma
+          omicron_ans = extracted_samples$omicron
+
+          #CONVERT TO F
+          #f is x_inner * beta1 + x_outer * beta_2
+          #p should be n_ind * n_samples * K
+          f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, 3600))
+
+          for(i in 1:cosimmrSTAN_in$n_obs){
+            for(k in 1: cosimmrSTAN_in$n_sources){
+              for(s in 1:3600){
+                f[i,k,s] =  X_inner[i,] %*% beta1_ans[s,k,]
+              }
+            }
+          }
+
+          #Then each p is sum f / sum exp f
+
+          p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, 3600,  cosimmrSTAN_in$n_sources))
+
+          for(j in 1:3600){
+            for (n_obs in 1:cosimmrSTAN_in$n_obs) {
+              p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
+            }
+          }
+
+
+
+
+
+        }else if(error_type == "process+residual"){
+          #not nested random effects p+r WORKING
+          stan_dat = list(
+            J = cosimmrSTAN_in$n_tracers,
+            N = cosimmrSTAN_in$n_obs,
+            K = cosimmrSTAN_in$n_sources,
+            L1 = ncol(cosimmrSTAN_in$X_inner),
+            L2 = 1,
+            y = cosimmrSTAN_in$mixtures,
+            q = cosimmrSTAN_in$concentration_means,
+            s_mean = cosimmrSTAN_in$source_means,
+            c_mean = cosimmrSTAN_in$correction_means,
+            s_sd = cosimmrSTAN_in$source_sds,
+            c_sd = cosimmrSTAN_in$correction_sds,
+            sigma_shape = prior_control$sigma_shape,
+            sigma_rate = prior_control$sigma_rate,
+            not_solo = solo,
+            X_intercept = cosimmrSTAN_in$X_intercept,
+            X_inner = cosimmrSTAN_in$X_inner
+          )
+          model = stanmodels$STAN_nested_1_random_effect_pandr
+#
+#           fit_opt <- rstan::optimizing(model,
+#                                        data = stan_dat)
+#
+#           which_alpha <- grep('alpha', names(fit_opt$par))
+#           which_beta1 <- grep('beta1', names(fit_opt$par))
+#
+#
+#           which_sigma <- grep('sigma', names(fit_opt$par))
+#
+#           alpha_start_opt <- structure(fit_opt$par[which_alpha],
+#                                        dim  = c(stan_dat$K, 1))
+#
+#           beta1_start_opt <- structure(fit_opt$par[which_beta1],
+#                                        dim  = c(stan_dat$K, stan_dat$L1))
+#
+#
+#
+#           sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
+
+
+
+          fit_vb <- rstan::vb(
+            model, data = stan_dat,
+            algorithm = 'fullrank',
+            pars = c('beta1', 'sigma'),
+            tol_rel_obj = 0.000001, #convergence tolerance on the relative norm of the objective
+            output_samples = 3600
+          )
+
+          extracted_samples = rstan::extract(fit_vb)
+
+          #Want to extract all the betas in a sensible way first I think
+          #alpha_ans = extracted_samples$alpha
+          beta1_ans = extracted_samples$beta1 # This is n_samples * K * n_covariates
+          beta2_ans = NULL
+          sigma_ans = extracted_samples$sigma
+          omicron_ans = NULL
+
+          #CONVERT TO F
+          #f is x_inner * beta1 + x_outer * beta_2
+          #p should be n_ind * n_samples * K
+          f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, 3600))
+
+          for(i in 1:cosimmrSTAN_in$n_obs){
+            for(k in 1: cosimmrSTAN_in$n_sources){
+              for(s in 1:3600){
+                f[i,k,s] =  cosimmrSTAN_in$X_inner[i,] %*% beta1_ans[s,k,]
+              }
+            }
+          }
+
+          #Then each p is sum f / sum exp f
+
+          p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, 3600,  cosimmrSTAN_in$n_sources))
+
+          for(j in 1:3600){
+            for (n_obs in 1:cosimmrSTAN_in$n_obs) {
+              p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
+            }
+          }
+        }
+      }
+
+    }else if(error_type == "processxresidual"){
+      #This is not nested fixed effects pxr WORKING
+      stan_dat = list(
+        J = cosimmrSTAN_in$n_tracers,
+        N = cosimmrSTAN_in$n_obs,
+        K = cosimmrSTAN_in$n_sources,
+        L = cosimmrSTAN_in$n_covariates,
+        y = cosimmrSTAN_in$mixtures,
+        q = cosimmrSTAN_in$concentration_means,
+        s_mean = cosimmrSTAN_in$source_means,
+        c_mean = cosimmrSTAN_in$correction_means,
+        s_sd = cosimmrSTAN_in$source_sds,
+        c_sd = cosimmrSTAN_in$correction_sds,
+        sigma_shape = prior_control$sigma_shape,
+        sigma_rate = prior_control$sigma_rate,
+        not_solo = solo,
+        X = cosimmrSTAN_in$x_scaled,
+        omicron_shape = prior_control$omicron_shape,
+        omicron_rate = prior_control$omicron_rate
+      )
+
+      model = stanmodels$STAN_VB_pxr_raw
+
+      fit_opt <- rstan::optimizing(model,
+                                   data = stan_dat)
+
+
+      which_beta1 <- grep('beta1', names(fit_opt$par))
+
+
+      which_sigma <- grep('sigma', names(fit_opt$par))
+      which_omicron <- grep('omicron', names(fit_opt$par))
+
+
+      beta1_start_opt <- structure(fit_opt$par[which_beta1],
+                                   dim  = c(stan_dat$K, stan_dat$L))
+
+
+
+      sigma_raw_start_opt <- fit_opt$par[which_sigma][1:stan_dat$J]
+      omicron_start_opt <- fit_opt$par[which_omicron][1:stan_dat$J]
+
+
+      fit_vb <- rstan::vb(
+        model, data = stan_dat,
+        algorithm = 'fullrank',
+        pars = c('beta', 'sigma', 'omicron'),
+        init = list('beta' = beta_start_opt,
+                    'sigma' = sigma_raw_start_opt,
+                    'omicron' = omicron_start_opt),
+        tol_rel_obj = 0.000001, #convergence tolerance on the relative norm of the objective
+        output_samples = 3600
+      )
+
+
+
+      extracted_samples = rstan::extract(fit_vb)
+
+      #Want to extract all the betas in a sensible way first I think
+      #alpha_ans = extracted_samples$alpha
+      beta1_ans = extracted_samples$beta # This is n_samples * K * n_covariates
+      beta2_ans = NULL
+      sigma_ans = extracted_samples$sigma
+      omicron_ans = extracted_samples$omicron
+
+      #CONVERT TO F
+      #f is x_inner * beta1 + x_outer * beta_2
+      #p should be n_ind * n_samples * K
+      f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, 3600))
+
+      for(i in 1:cosimmrSTAN_in$n_obs){
+        for(k in 1: cosimmrSTAN_in$n_sources){
+          for(s in 1:3600){
+            f[i,k,s] =  cosimmrSTAN_in$x_scaled[i,] %*% beta1_ans[s,k,]
+          }
+        }
+      }
+
+      #Then each p is sum f / sum exp f
+
+      p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, 3600,  cosimmrSTAN_in$n_sources))
+
+      for(j in 1:3600){
+        for (n_obs in 1:cosimmrSTAN_in$n_obs) {
+          p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
+        }
+      }
+
+
+
+    }else if(error_type == "process+residual"){
+      #not nested fixed effects p+r WORKING
+
+      stan_dat = list(
+        J = cosimmrSTAN_in$n_tracers,
+        N = cosimmrSTAN_in$n_obs,
+        K = cosimmrSTAN_in$n_sources,
+        L = cosimmrSTAN_in$n_covariates,
+        y = cosimmrSTAN_in$mixtures,
+        q = cosimmrSTAN_in$concentration_means,
+        s_mean = cosimmrSTAN_in$source_means,
+        c_mean = cosimmrSTAN_in$correction_means,
+        s_sd = cosimmrSTAN_in$source_sds,
+        c_sd = cosimmrSTAN_in$correction_sds,
+        sigma_shape = prior_control$sigma_shape,
+        sigma_rate = prior_control$sigma_rate,
+        not_solo = solo,
+        X = cosimmrSTAN_in$x_scaled
+      )
+
+      model = stanmodels$STAN_VB_pandr_raw
+
+
+      # fit_opt <- rstan::optimizing(model,
+      #                              data = stan_dat)
+      #
+      # which_alpha <- grep('alpha', names(fit_opt$par))
+      # which_beta1 <- grep('beta1', names(fit_opt$par))
+      #
+      #
+      # which_sigma <- grep('sigma', names(fit_opt$par))
+      #
+      # alpha_start_opt <- structure(fit_opt$par[which_alpha],
+      #                              dim  = c(stan_dat$K, 1))
+      #
+      # beta1_start_opt <- structure(fit_opt$par[which_beta1],
+      #                              dim  = c(stan_dat$K, stan_dat$L1))
+#
+#
+#
+#       sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
+
+
+      fit_vb <- rstan::vb(
+        model, data = stan_dat,
+        algorithm = 'fullrank',
+        pars = c('beta', 'sigma'),
+        tol_rel_obj = 0.000001, #convergence tolerance on the relative norm of the objective
+        output_samples = 3600
+      )
+
+
+
+      extracted_samples = rstan::extract(fit_vb)
+
+      #Want to extract all the betas in a sensible way first I think
+      #alpha_ans = extracted_samples$alpha
+      beta1_ans = extracted_samples$beta # This is n_samples * K * n_covariates
+      beta2_ans = NULL
+      sigma_ans = extracted_samples$sigma
+      omicron_ans = NULL
+
+      #CONVERT TO F
+      #f is x_inner * beta1 + x_outer * beta_2
+      #p should be n_ind * n_samples * K
+      f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, 3600))
+
+      for(i in 1:cosimmrSTAN_in$n_obs){
+        for(k in 1: cosimmrSTAN_in$n_sources){
+          for(s in 1:3600){
+            f[i,k,s] =  cosimmrSTAN_in$x_scaled[i,] %*% beta1_ans[s,k,]
+          }
+        }
+      }
+
+      #Then each p is sum f / sum exp f
+
+      p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, 3600,  cosimmrSTAN_in$n_sources))
+
+      for(j in 1:3600){
+        for (n_obs in 1:cosimmrSTAN_in$n_obs) {
+          p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
+        }
+      }
+
+
+
+
+    }
+
+
+
+
+  } else if(type == "STAN_MCMC"){
+   ### COPY VB WHEN WORKING AND JUST CHANGE TO MCMC
+
+
+    if(cosimmrSTAN_in$random_effects == TRUE){
+      if(cosimmrSTAN_in$nested == TRUE){
+        if(error_type == "processxresidual"){
+          #This is nested random effects pxr WORKING
+          inner_original = cosimmrSTAN_in$original_x[,2]
+          outer_original = cosimmrSTAN_in$original_x[,1]
+
+          region_for_pack_output = c(rep(NA, length(unique(outer_original))))
+
+
+          # Find the unique values in A
+          unique_pack <- unique(inner_original)
+
+          # Loop over each unique value in A and find the corresponding value in B
+          for (i in seq_along(unique_pack)) {
+            # Find the index of the first occurrence of the unique value in A
+            index <- match(unique_pack[i], inner_original)
+            # Get the corresponding value in B
+            region_for_pack_output[i] <- outer_original[index]
+          }
+
+
+
+          stan_dat = list(
+            J = cosimmrSTAN_in$n_tracers,
+            N = cosimmrSTAN_in$n_obs,
+            K = cosimmrSTAN_in$n_sources,
+            L1 = ncol(cosimmrSTAN_in$X_inner),
+            L2 = ncol(cosimmrSTAN_in$X_region),
+            y = cosimmrSTAN_in$mixtures,
+            q = cosimmrSTAN_in$concentration_means,
+            s_mean = cosimmrSTAN_in$source_means,
+            c_mean = cosimmrSTAN_in$correction_means,
+            s_sd = cosimmrSTAN_in$source_sds,
+            c_sd = cosimmrSTAN_in$correction_sds,
+            sigma_shape = prior_control$sigma_shape,
+            sigma_rate = prior_control$sigma_rate,
+            not_solo = solo,
+            X_intercept = cosimmrSTAN_in$X_intercept,
+            X_inner = cosimmrSTAN_in$X_inner,
+            X_outer = cosimmrSTAN_in$X_region,
+            region_for_pack = region_for_pack_output,
+            omicron_shape = prior_control$omicron_shape,
+            omicron_rate = prior_control$omicron_rate
+          )
+
+          model = stanmodels$STAN_nested_2_random_effect_pxr_raw
+
+          #
+          #           fit_opt <- rstan::optimizing(model,
+          #                                        data = stan_dat)
+          #
+          #
+          #           which_beta1 <- grep('beta1', names(fit_opt$par))
+          #
+          #
+          #           which_beta2 <- grep('beta2', names(fit_opt$par))
+          #
+          #
+          #           which_sigma <- grep('sigma', names(fit_opt$par))
+          #
+          #           which_omicron <- grep('omicron', names(fit_opt$par))
+          #
+          #
+          #           beta1_start_opt <- structure(fit_opt$par[which_beta1],
+          #                                        dim  = c(stan_dat$K, stan_dat$L1))
+          #
+          #           beta2_start_opt <- structure(fit_opt$par[which_beta2],
+          #                                        dim  = c(stan_dat$K, stan_dat$L2))
+          #
+          #
+          #
+          #           sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
+
+
+          fit_mcmc <- sampling(
+            model,
+            data = stan_dat,
+            seed = 1,
+            iter = 5000,
+            cores = 1
+          )
+
+          extracted_samples = rstan::extract(fit_mcmc)
+
+          #Want to extract all the betas in a sensible way first I think
+          #alpha_ans = extracted_samples$alpha
+          beta1_ans = extracted_samples$beta1 # This is n_samples * K * n_covariates
+          beta2_ans = extracted_samples$beta2
+          sigma_ans = extracted_samples$sigma
+          omicron_ans = extracted_samples$omicron
+
+          #CONVERT TO F
+          #f is x_inner * beta1 + x_outer * beta_2
+          #p should be n_ind * n_samples * K
+          f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, 3600))
+
+          for(i in 1:cosimmrSTAN_in$n_obs){
+            for(k in 1: cosimmrSTAN_in$n_sources){
+              for(s in 1:3600){
+                f[i,k,s] =  cosimmrSTAN_in$X_inner[i,] %*% beta1_ans[s,k,] + cosimmrSTAN_in$X_region[i,] %*% beta2_ans[s,k,]
+              }
+            }
+          }
+
+          #Then each p is sum f / sum exp f
+
+          p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, 3600,  cosimmrSTAN_in$n_sources))
+
+          for(j in 1:3600){
+            for (n_obs in 1:cosimmrSTAN_in$n_obs) {
+              p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
+            }
+          }
+
+
+
+        }else if(error_type == "process+residual"){
+          #nested random effects p+r WORKING
+
+          inner_original = cosimmrSTAN_in$original_x[,2]
+          outer_original = cosimmrSTAN_in$original_x[,1]
+
+          region_for_pack_output = c(rep(NA, length(unique(outer_original))))
+
+
+          # Find the unique values in A
+          unique_pack <- unique(inner_original)
+
+          # Loop over each unique value in A and find the corresponding value in B
+          for (i in seq_along(unique_pack)) {
+            # Find the index of the first occurrence of the unique value in A
+            index <- match(unique_pack[i], inner_original)
+            # Get the corresponding value in B
+            region_for_pack_output[i] <- outer_original[index]
+          }
+
+
+
+          stan_dat = list(
+            J = cosimmrSTAN_in$n_tracers,
+            N = cosimmrSTAN_in$n_obs,
+            K = cosimmrSTAN_in$n_sources,
+            L1 = ncol(cosimmrSTAN_in$X_inner),
+            L2 = ncol(cosimmrSTAN_in$X_region),
+            y = cosimmrSTAN_in$mixtures,
+            q = cosimmrSTAN_in$concentration_means,
+            s_mean = cosimmrSTAN_in$source_means,
+            c_mean = cosimmrSTAN_in$correction_means,
+            s_sd = cosimmrSTAN_in$source_sds,
+            c_sd = cosimmrSTAN_in$correction_sds,
+            sigma_shape = prior_control$sigma_shape,
+            sigma_rate = prior_control$sigma_rate,
+            not_solo = solo,
+            X_intercept = cosimmrSTAN_in$X_intercept,
+            X_inner = cosimmrSTAN_in$X_inner,
+            X_outer = cosimmrSTAN_in$X_region,
+            region_for_pack = region_for_pack_output
+          )
+
+          model = stanmodels$STAN_nested_2_random_effect_pandr_raw
+
+          # fit_opt <- rstan::optimizing(model,
+          #                              data = stan_dat)
+          #
+          # which_alpha <- grep('alpha', names(fit_opt$par))
+          # which_beta1 <- grep('beta1', names(fit_opt$par))
+          #
+          #
+          # which_sigma <- grep('sigma', names(fit_opt$par))
+          #
+          # alpha_start_opt <- structure(fit_opt$par[which_alpha],
+          #                              dim  = c(stan_dat$K, 1))
+          #
+          # beta1_start_opt <- structure(fit_opt$par[which_beta1],
+          #                              dim  = c(stan_dat$K, stan_dat$L1))
+          #
+          #
+          #
+          # sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
+
+
+          fit_mcmc <- sampling(
+            model,
+            data = stan_dat,
+            seed = 1,
+            iter = 5000,
+            cores = 1
+          )
+
+          extracted_samples = rstan::extract(fit_mcmc)
+
+          #Want to extract all the betas in a sensible way first I think
+          #alpha_ans = extracted_samples$alpha
+          beta1_ans = extracted_samples$beta1 # This is n_samples * K * n_covariates
+          beta2_ans = extracted_samples$beta2
+          sigma_ans = extracted_samples$sigma
+          omicron_ans = NULL
+
+          #CONVERT TO F
+          #f is x_inner * beta1 + x_outer * beta_2
+          #p should be n_ind * n_samples * K
+          f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, 3600))
+
+          for(i in 1:cosimmrSTAN_in$n_obs){
+            for(k in 1: cosimmrSTAN_in$n_sources){
+              for(s in 1:3600){
+                f[i,k,s] = cosimmrSTAN_in$X_inner[i,] %*% beta1_ans[s,k,] + cosimmrSTAN_in$X_region[i,] %*% beta2_ans[s,k,]
+              }
+            }
+          }
+
+          #Then each p is sum f / sum exp f
+
+          p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, 3600,  cosimmrSTAN_in$n_sources))
+
+          for(j in 1:3600){
+            for (n_obs in 1:cosimmrSTAN_in$n_obs) {
+              p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
+            }
+          }
+
+
+
+
+
+          #Then each p is sum f / sum exp f
 
         }
       }else{
@@ -352,7 +951,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             c_sd = cosimmrSTAN_in$correction_sds,
             sigma_shape = prior_control$sigma_shape,
             sigma_rate = prior_control$sigma_rate,
-            not_solo = 1,
+            not_solo = solo,
             X_intercept = cosimmrSTAN_in$X_intercept,
             X_inner = cosimmrSTAN_in$X_inner,
             omicron_shape = prior_control$omicron_shape,
@@ -363,38 +962,72 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           model = stanmodels$STAN_nested_1_random_effect_pxr_raw
 
 
-          fit_opt <- rstan::optimizing(model,
-                                       data = stan_dat)
+          # fit_opt <- rstan::optimizing(model,
+          #                              data = stan_dat)
+          #
+          # which_alpha <- grep('alpha', names(fit_opt$par))
+          # which_beta1 <- grep('beta1', names(fit_opt$par))
+          #
+          #
+          # which_sigma <- grep('sigma', names(fit_opt$par))
+          #
+          # alpha_start_opt <- structure(fit_opt$par[which_alpha],
+          #                              dim  = c(stan_dat$K, 1))
+          #
+          # beta1_start_opt <- structure(fit_opt$par[which_beta1],
+          #                              dim  = c(stan_dat$K, stan_dat$L1))
+          #
+          #
+          #
+          # sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
 
-          which_alpha <- grep('alpha', names(fit_opt$par))
-          which_beta1 <- grep('beta1', names(fit_opt$par))
 
-
-          which_sigma <- grep('sigma', names(fit_opt$par))
-
-          alpha_start_opt <- structure(fit_opt$par[which_alpha],
-                                       dim  = c(stan_dat$K, 1))
-
-          beta1_start_opt <- structure(fit_opt$par[which_beta1],
-                                       dim  = c(stan_dat$K, stan_dat$L1))
-
-
-
-          sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
-
-
-          fit_vb <- rstan::vb(
-            model, data = stan_dat,
-            algorithm = 'fullrank',
-            pars = c('alpha', 'beta1', 'sigma'),
-            init = list('alpha' = alpha_start_opt,
-                        'beta1' = beta1_start_opt,
-                        'log_sigma_raw' = sigma_raw_start_opt),
-            tol_rel_obj = 0.000001, #convergence tolerance on the relative norm of the objective
-            output_samples = 3600
+          fit_mcmc <- sampling(
+            model,
+            data = stan_dat,
+            seed = 1,
+            iter = 5000,
+            cores = 1
           )
+
+          extracted_samples = rstan::extract(fit_mcmc)
+
+          #Want to extract all the betas in a sensible way first I think
+          #alpha_ans = extracted_samples$alpha
+          beta1_ans = extracted_samples$beta1 # This is n_samples * K * n_covariates
+          beta2_ans = NULL
+          sigma_ans = extracted_samples$sigma
+          omicron_ans = extracted_samples$omicron
+
+          #CONVERT TO F
+          #f is x_inner * beta1 + x_outer * beta_2
+          #p should be n_ind * n_samples * K
+          f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, 3600))
+
+          for(i in 1:cosimmrSTAN_in$n_obs){
+            for(k in 1: cosimmrSTAN_in$n_sources){
+              for(s in 1:3600){
+                f[i,k,s] =  cosimmrSTAN_in$X_inner[i,] %*% beta1_ans[s,k,]
+              }
+            }
+          }
+
+          #Then each p is sum f / sum exp f
+
+          p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, 3600,  cosimmrSTAN_in$n_sources))
+
+          for(j in 1:3600){
+            for (n_obs in 1:cosimmrSTAN_in$n_obs) {
+              p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
+            }
+          }
+
+
+
+
+
         }else if(error_type == "process+residual"){
-          #not nested random effects p+r
+          #not nested random effects p+r WORKING
           stan_dat = list(
             J = cosimmrSTAN_in$n_tracers,
             N = cosimmrSTAN_in$n_obs,
@@ -409,48 +1042,77 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             c_sd = cosimmrSTAN_in$correction_sds,
             sigma_shape = prior_control$sigma_shape,
             sigma_rate = prior_control$sigma_rate,
-            not_solo = 0,
+            not_solo = solo,
             X_intercept = cosimmrSTAN_in$X_intercept,
             X_inner = cosimmrSTAN_in$X_inner
           )
           model = stanmodels$STAN_nested_1_random_effect_pandr
+          #
+          #           fit_opt <- rstan::optimizing(model,
+          #                                        data = stan_dat)
+          #
+          #           which_alpha <- grep('alpha', names(fit_opt$par))
+          #           which_beta1 <- grep('beta1', names(fit_opt$par))
+          #
+          #
+          #           which_sigma <- grep('sigma', names(fit_opt$par))
+          #
+          #           alpha_start_opt <- structure(fit_opt$par[which_alpha],
+          #                                        dim  = c(stan_dat$K, 1))
+          #
+          #           beta1_start_opt <- structure(fit_opt$par[which_beta1],
+          #                                        dim  = c(stan_dat$K, stan_dat$L1))
+          #
+          #
+          #
+          #           sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
 
-          fit_opt <- rstan::optimizing(model,
-                                       data = stan_dat)
-
-          which_alpha <- grep('alpha', names(fit_opt$par))
-          which_beta1 <- grep('beta1', names(fit_opt$par))
 
 
-          which_sigma <- grep('sigma', names(fit_opt$par))
+          fit_mcmc <- sampling(
+            model,
+            data = stan_dat,
+            seed = 1,
+            iter = 5000,
+            cores = 1
+            )
 
-          alpha_start_opt <- structure(fit_opt$par[which_alpha],
-                                       dim  = c(stan_dat$K, 1))
+          extracted_samples = rstan::extract(fit_mcmc)
 
-          beta1_start_opt <- structure(fit_opt$par[which_beta1],
-                                       dim  = c(stan_dat$K, stan_dat$L1))
+          #Want to extract all the betas in a sensible way first I think
+          #alpha_ans = extracted_samples$alpha
+          beta1_ans = extracted_samples$beta1 # This is n_samples * K * n_covariates
+          beta2_ans = NULL
+          sigma_ans = extracted_samples$sigma
+          omicron_ans = NULL
 
+          #CONVERT TO F
+          #f is x_inner * beta1 + x_outer * beta_2
+          #p should be n_ind * n_samples * K
+          f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, 3600))
 
+          for(i in 1:cosimmrSTAN_in$n_obs){
+            for(k in 1: cosimmrSTAN_in$n_sources){
+              for(s in 1:3600){
+                f[i,k,s] =  cosimmrSTAN_in$X_inner[i,] %*% beta1_ans[s,k,]
+              }
+            }
+          }
 
-          sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
+          #Then each p is sum f / sum exp f
 
+          p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, 3600,  cosimmrSTAN_in$n_sources))
 
-          fit_vb <- rstan::vb(
-            model, data = stan_dat,
-            algorithm = 'fullrank',
-            pars = c('alpha', 'beta1', 'sigma'),
-            init = list('alpha' = alpha_start_opt,
-                        'beta1' = beta1_start_opt,
-                        'log_sigma_raw' = sigma_raw_start_opt),
-            tol_rel_obj = 0.000001, #convergence tolerance on the relative norm of the objective
-            output_samples = 3600
-          )
-
+          for(j in 1:3600){
+            for (n_obs in 1:cosimmrSTAN_in$n_obs) {
+              p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
+            }
+          }
         }
       }
 
-    }else{if(error_type == "processxresidual"){
-      #This is not nested fixed effects pxr
+    }else if(error_type == "processxresidual"){
+      #This is not nested fixed effects pxr WORKING
       stan_dat = list(
         J = cosimmrSTAN_in$n_tracers,
         N = cosimmrSTAN_in$n_obs,
@@ -464,7 +1126,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
         c_sd = cosimmrSTAN_in$correction_sds,
         sigma_shape = prior_control$sigma_shape,
         sigma_rate = prior_control$sigma_rate,
-        not_solo = 1,
+        not_solo = solo,
         X = cosimmrSTAN_in$x_scaled,
         omicron_shape = prior_control$omicron_shape,
         omicron_rate = prior_control$omicron_rate
@@ -472,41 +1134,70 @@ cosimmr_stan <- function(cosimmrSTAN_in,
 
       model = stanmodels$STAN_VB_pxr_raw
 
-      fit_opt <- rstan::optimizing(model,
-                                   data = stan_dat)
+      # fit_opt <- rstan::optimizing(model,
+      #                              data = stan_dat)
+      #
+      # which_alpha <- grep('alpha', names(fit_opt$par))
+      # which_beta1 <- grep('beta1', names(fit_opt$par))
+      #
+      #
+      # which_sigma <- grep('sigma', names(fit_opt$par))
+      #
+      # alpha_start_opt <- structure(fit_opt$par[which_alpha],
+      #                              dim  = c(stan_dat$K, 1))
+      #
+      # beta1_start_opt <- structure(fit_opt$par[which_beta1],
+      #                              dim  = c(stan_dat$K, stan_dat$L1))
+      #
+      #
+      #
+      # sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
 
-      which_alpha <- grep('alpha', names(fit_opt$par))
-      which_beta1 <- grep('beta1', names(fit_opt$par))
 
-
-      which_sigma <- grep('sigma', names(fit_opt$par))
-
-      alpha_start_opt <- structure(fit_opt$par[which_alpha],
-                                   dim  = c(stan_dat$K, 1))
-
-      beta1_start_opt <- structure(fit_opt$par[which_beta1],
-                                   dim  = c(stan_dat$K, stan_dat$L1))
-
-
-
-      sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
-
-
-      fit_vb <- rstan::vb(
-        model, data = stan_dat,
-        algorithm = 'fullrank',
-        pars = c('alpha', 'beta1', 'sigma'),
-        init = list('alpha' = alpha_start_opt,
-                    'beta1' = beta1_start_opt,
-                    'log_sigma_raw' = sigma_raw_start_opt),
-        tol_rel_obj = 0.000001, #convergence tolerance on the relative norm of the objective
-        output_samples = 3600
+      fit_mcmc <- sampling(
+        model,
+        data = stan_dat,
+        seed = 1,
+        iter = 5000,
+        cores = 1
       )
+
+      extracted_samples = rstan::extract(fit_mcmc)
+
+      #Want to extract all the betas in a sensible way first I think
+      #alpha_ans = extracted_samples$alpha
+      beta1_ans = extracted_samples$beta # This is n_samples * K * n_covariates
+      beta2_ans = NULL
+      sigma_ans = extracted_samples$sigma
+      omicron_ans = extracted_samples$omicron
+
+      #CONVERT TO F
+      #f is x_inner * beta1 + x_outer * beta_2
+      #p should be n_ind * n_samples * K
+      f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, 3600))
+
+      for(i in 1:cosimmrSTAN_in$n_obs){
+        for(k in 1: cosimmrSTAN_in$n_sources){
+          for(s in 1:3600){
+            f[i,k,s] =  cosimmrSTAN_in$x_scaled[i,] %*% beta1_ans[s,k,]
+          }
+        }
+      }
+
+      #Then each p is sum f / sum exp f
+
+      p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, 3600,  cosimmrSTAN_in$n_sources))
+
+      for(j in 1:3600){
+        for (n_obs in 1:cosimmrSTAN_in$n_obs) {
+          p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
+        }
+      }
 
 
 
     }else if(error_type == "process+residual"){
-      #not nested fixed effects p+r
+      #not nested fixed effects p+r WORKING
 
       stan_dat = list(
         J = cosimmrSTAN_in$n_tracers,
@@ -521,109 +1212,96 @@ cosimmr_stan <- function(cosimmrSTAN_in,
         c_sd = cosimmrSTAN_in$correction_sds,
         sigma_shape = prior_control$sigma_shape,
         sigma_rate = prior_control$sigma_rate,
-        not_solo = 0,
+        not_solo = solo,
         X = cosimmrSTAN_in$x_scaled
       )
 
       model = stanmodels$STAN_VB_pandr_raw
 
 
-      fit_opt <- rstan::optimizing(model,
-                                   data = stan_dat)
+      # fit_opt <- rstan::optimizing(model,
+      #                              data = stan_dat)
+      #
+      # which_alpha <- grep('alpha', names(fit_opt$par))
+      # which_beta1 <- grep('beta1', names(fit_opt$par))
+      #
+      #
+      # which_sigma <- grep('sigma', names(fit_opt$par))
+      #
+      # alpha_start_opt <- structure(fit_opt$par[which_alpha],
+      #                              dim  = c(stan_dat$K, 1))
+      #
+      # beta1_start_opt <- structure(fit_opt$par[which_beta1],
+      #                              dim  = c(stan_dat$K, stan_dat$L1))
+      #
+      #
+      #
+      #       sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
 
-      which_alpha <- grep('alpha', names(fit_opt$par))
-      which_beta1 <- grep('beta1', names(fit_opt$par))
 
-
-      which_sigma <- grep('sigma', names(fit_opt$par))
-
-      alpha_start_opt <- structure(fit_opt$par[which_alpha],
-                                   dim  = c(stan_dat$K, 1))
-
-      beta1_start_opt <- structure(fit_opt$par[which_beta1],
-                                   dim  = c(stan_dat$K, stan_dat$L1))
-
-
-
-      sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
-
-
-      fit_vb <- rstan::vb(
-        model, data = stan_dat,
-        algorithm = 'fullrank',
-        pars = c('alpha', 'beta1', 'sigma'),
-        init = list('alpha' = alpha_start_opt,
-                    'beta1' = beta1_start_opt,
-                    'log_sigma_raw' = sigma_raw_start_opt),
-        tol_rel_obj = 0.000001, #convergence tolerance on the relative norm of the objective
-        output_samples = 3600
+      fit_mcmc <- rstan::sampling(
+        model,
+        data = stan_dat,
+        seed = 1,
+        iter = 5000,
+        cores = 1
       )
 
+      extracted_samples = rstan::extract(fit_mcmc)
+
+      #Want to extract all the betas in a sensible way first I think
+      #alpha_ans = extracted_samples$alpha
+      beta1_ans = extracted_samples$beta # This is n_samples * K * n_covariates
+      beta2_ans = NULL
+      sigma_ans = extracted_samples$sigma
+      omicron_ans = NULL
+
+      #CONVERT TO F
+      #f is x_inner * beta1 + x_outer * beta_2
+      #p should be n_ind * n_samples * K
+      f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, 3600))
+
+      for(i in 1:cosimmrSTAN_in$n_obs){
+        for(k in 1: cosimmrSTAN_in$n_sources){
+          for(s in 1:3600){
+            f[i,k,s] =  cosimmrSTAN_in$x_scaled[i,] %*% beta1_ans[s,k,]
+          }
+        }
+      }
+
+      #Then each p is sum f / sum exp f
+
+      p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, 3600,  cosimmrSTAN_in$n_sources))
+
+      for(j in 1:3600){
+        for (n_obs in 1:cosimmrSTAN_in$n_obs) {
+          p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
+        }
+      }
 
 
 
 
-
-    }}
-
-  fit_opt <- rstan::optimizing(stanmodels$STAN_VB,
-                        data = stan_dat)
-
-  which_beta <- grep('beta', names(fit_opt$par))
-
-  which_sigma <- grep('sigma', names(fit_opt$par))
-
-  beta_start_opt <- structure(fit_opt$par[which_beta],
-                              dim  = c(stan_dat$K, stan_dat$L))
-  sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
+    }
 
 
-  fit_vb <- rstan::vb(
-    stanmodels$STAN_VB, data = stan_dat,
-    algorithm = 'fullrank',
-    pars = c('beta', 'sigma'),
-    init = list('beta' = beta_start_opt,
-                'log_sigma_raw' = sigma_raw_start_opt),
-    tol_rel_obj = 0.00001, #convergence tolerance on the relative norm of the objective
-    output_samples = n_samples
-     )
-
-  #Want to simulate p here and return that?
-  #And return sigma in a sensible way
-  extracted_samples = rstan::extract(fit_vb)
-
-  #Want to extract all the betas in a sensible way first I think
-  beta_ans = extracted_samples$beta # This is n_samples * K * n_covariates
-  sigma_ans = extracted_samples$sigma
-
-
-  #Want to simulate p
-
+  }
 
   mylist <- list(
-fit_vb = fit_vb,
-beta = beta_ans,
-sigma = sigma_ans
+    source_names = cosimmrSTAN_in$source_names,
+    p = p_sample,
+    beta1_ans = beta1_ans,
+    beta2_ans = beta2_ans,
+    sigma_ans = sigma_ans,
+    omicron_ans = omicron_ans
   )
 
 
-  output_all <- list(input = cosimmr_in, output = mylist)
+  output_all <- list(input = cosimmrSTAN_in, output = mylist)
 
-  class(output_all) <- c("cosimmr_output", "stan_vb")
+  class(output_all) <- c("cosimmrSTAN_output")
 
   return(output_all)
-
-
-
-
-  } else if(type == "STAN_MCMC"){
-    #I think this is calling the model - need to check that it calls what I actually need
-    fit_mcmc <- rstan::sampling(
-      stanmodels$STAN_VB, #This is named stan VB but the VB is the algorithm - model is just generic!
-      data = stan_dat,
-      seed = 1
-    )
-  }
 
 
 

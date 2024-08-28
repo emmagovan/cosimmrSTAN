@@ -1,0 +1,30 @@
+---
+title: "cosimmrSTAN-vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{cosimmrSTAN-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+cosimmrSTAN is an R package built to allow for running of more complex SIMMs through STAN. Users can choose whether to use the Variational Bayes (VB) or the Markov chain Monte Carlo (MCMC) algorithms. Users can include random effects, as well as nested effects in this package.
+
+To begin, install the package
+# ```{r, eval = FALSE}
+# install_github("emmagovan/cosimmrSTAN")
+# ```
+# 
+# Then load it in
+# ```{r, eval = FALSE}
+# library(cosimmrSTAN)
+# ```
+
+
+There are several data sets built into the package. We will use the alligator data set (from Nifong et al) for illustration.

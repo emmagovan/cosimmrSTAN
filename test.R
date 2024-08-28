@@ -2,7 +2,21 @@
 
 
 #Setup 1 - do the same as cosimmr basically
-formula = alligator_data$mixtures ~ alligator_data$long
+Length = alligator_data$length
+formula = alligator_data$mixtures ~ Length
+source_names = alligator_data$source_names
+source_means = alligator_data$source_means
+source_sds = alligator_data$source_sds
+source = NULL
+n_each_source = c(5,10)
+correction_means = alligator_data$TEF_means
+correction_sds = alligator_data$TEF_sds
+concentration_means = NULL
+scale_x = FALSE
+raw_source = FALSE
+random_effects = FALSE
+hierarchical_fitting = TRUE
+shape_sig = 1
 
 out<-cosimmrSTAN_load(formula,
                  source_names = alligator_data$source_names,
@@ -19,11 +33,16 @@ out<-cosimmrSTAN_load(formula,
                  hierarchical_fitting = TRUE,
                  shape_sig = 1)
 
+out_1 = cosimmr_stan(out, error_type = "process+residual")
+
+
+out2 = cosimmr_stan(out, type = "STAN_MCMC", error_type = "process+residual")
+
 
 ##Setup 2 random effect
 formula = alligator_data$mixtures ~ 1|as.factor(alligator_data$sex)
 
-out<-cosimmrSTAN_load(formula,
+in_random<-cosimmrSTAN_load(formula,
                       source_names = alligator_data$source_names,
                       source_means = alligator_data$source_means,
                       source_sds = alligator_data$source_sds,
@@ -37,6 +56,16 @@ out<-cosimmrSTAN_load(formula,
                       random_effects = TRUE,
                       hierarchical_fitting = TRUE,
                       shape_sig = 1)
+
+
+out_random = cosimmr_stan(out, error_type = "process+residual")
+
+
+out_mcmc = cosimmr_stan(out, type = "STAN_MCMC", error_type = "process+residual")
+out_1 = cosimmr_stan(out)
+
+
+out2 = cosimmr_stan(out, type = "STAN_MCMC")
 
 
 ## Nested
@@ -44,7 +73,7 @@ pack = as.factor(c(rep(1,21), rep(2,50), rep(3, 70), rep(4,40)))
 region = as.factor(c(rep(1, 71), rep(2,110)))
 formula2 = alligator_data$mixtures ~ 1|region/pack
 
-out_nest<-cosimmrSTAN_load(formula2,
+in_nest<-cosimmrSTAN_load(formula2,
                       source_names = alligator_data$source_names,
                       source_means = alligator_data$source_means,
                       source_sds = alligator_data$source_sds,
@@ -58,6 +87,16 @@ out_nest<-cosimmrSTAN_load(formula2,
                       random_effects = TRUE,
                       hierarchical_fitting = TRUE,
                       shape_sig = 1)
+
+
+out_nest = cosimmr_stan(in_nest, error_type = "process+residual")
+
+
+out2 = cosimmr_stan(in_nest, type = "STAN_MCMC", error_type = "process+residual")
+out_nest_pxr = cosimmr_stan(in_nest)
+
+
+I out_nest_pxr mr_stan(in_nest, type = "STAN_MCMC")
 
 
 
@@ -168,3 +207,4 @@ fit <- sampling(
 
 
 
+#devtools::build(args = c("--no-manual", "--no-resave-data", "--no-build-vignettes"), quiet = FALSE)
