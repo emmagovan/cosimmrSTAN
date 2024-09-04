@@ -11,8 +11,8 @@
 #' @import Rcpp
 #' @import methods
 #' @importFrom Rcpp evalCpp
-#' @useDynLib cosimmr
-#' @aliases cosimmr-package
+#' @useDynLib cosimmrSTAN
+#' @aliases cosimmrSTAN-package
 ## usethis namespace: start
 #' @importFrom Rcpp sourceCpp
 #' @importFrom rstan sampling

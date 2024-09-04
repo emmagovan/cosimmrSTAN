@@ -17,8 +17,6 @@ RcppExport SEXP _rcpp_module_boot_stan_fit4STAN_VB_pandr_raw_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4STAN_VB_pxr_raw_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4STAN_nested_1_random_effect_pandr_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4STAN_nested_1_random_effect_pxr_raw_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4STAN_nested_2_random_effect_pandr_raw_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4STAN_nested_2_random_effect_pxr_raw_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4raw_source_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4twopxr_mod();
 
@@ -28,8 +26,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4STAN_VB_pxr_raw_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4STAN_VB_pxr_raw_mod, 0},
     {"_rcpp_module_boot_stan_fit4STAN_nested_1_random_effect_pandr_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4STAN_nested_1_random_effect_pandr_mod, 0},
     {"_rcpp_module_boot_stan_fit4STAN_nested_1_random_effect_pxr_raw_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4STAN_nested_1_random_effect_pxr_raw_mod, 0},
-    {"_rcpp_module_boot_stan_fit4STAN_nested_2_random_effect_pandr_raw_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4STAN_nested_2_random_effect_pandr_raw_mod, 0},
-    {"_rcpp_module_boot_stan_fit4STAN_nested_2_random_effect_pxr_raw_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4STAN_nested_2_random_effect_pxr_raw_mod, 0},
     {"_rcpp_module_boot_stan_fit4raw_source_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4raw_source_mod, 0},
     {"_rcpp_module_boot_stan_fit4twopxr_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4twopxr_mod, 0},
     {NULL, NULL, 0}

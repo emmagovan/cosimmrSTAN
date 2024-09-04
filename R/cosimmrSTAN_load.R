@@ -109,29 +109,18 @@ shape_sig = 1) {
     covariates = NULL
     a = lme4::glFormula(formula)
     X_intercept = a$X #packs (n_ind * n_packs)
+    intercept = FALSE # I think I want to make this false bc it wont be used in the plotting etc even though there is an intercept
 
-    #check if its 2 RE or 1 RE
-    re = length(a$reTrms$nl)
+    X_inner = t(as.matrix(a$reTrms$Zt))
 
-    if(re ==1){
-      X_inner = t(as.matrix(a$reTrms$Zt))
-      X_region = NULL
       x_scaled = NULL
       original_x = a$fr[,(2):ncol(a$fr)]
-      nested = NULL
-    }else if (re ==2){
 
+      cnames = colnames(a$fr)[-1]
+      covariates = data.frame(a$fr)
+      colnames(covariates) = cnames
 
-    X_inner = t(as.matrix(a$reTrms$Zt))[,1:a$reTrms$nl[1]]
-    X_region = t(as.matrix(a$reTrms$Zt))[,(a$reTrms$nl[1] +1):(a$reTrms$nl[1] + a$reTrms$nl[2])]
-    x_scaled = NULL
-    original_x =  a$fr[,(2):ncol(a$fr)]
-    nested = TRUE
-
-
-    }
-
-    mixtures = as.matrix(a$fr[1:(ncol(a$fr) - re)])
+    mixtures = as.matrix(a$fr[1])
     n_tracers = ncol(mixtures)
 
   }else if(random_effects == FALSE){
@@ -452,7 +441,6 @@ model = cosimmrSTAN:::stanmodels$Hierarchical
     mixtures = mixtures,
     x_scaled = x_scaled,
     X_inner = X_inner,
-    X_region = X_region,
     X_intercept = X_intercept,
     source_names = source_names,
     source_means = source_means_out,
@@ -471,8 +459,7 @@ model = cosimmrSTAN:::stanmodels$Hierarchical
     n_covariates =  ncol(x_scaled),
     original_x = original_x,
     random_effects = random_effects,
-    hierarchical_fitting = hierarchical_fitting,
-    nested = nested
+    hierarchical_fitting = hierarchical_fitting
 
   )
 

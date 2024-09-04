@@ -1,30 +1,55 @@
 ---
 title: "cosimmrSTAN-vignette"
-output: rmarkdown::html_vignette
+author: "Emma Govan and Andrew Parnell"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+  toc: true
 vignette: >
-  %\VignetteIndexEntry{cosimmrSTAN-vignette}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{cosimmrSTAN}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-```
 
 cosimmrSTAN is an R package built to allow for running of more complex SIMMs through STAN. Users can choose whether to use the Variational Bayes (VB) or the Markov chain Monte Carlo (MCMC) algorithms. Users can include random effects, as well as nested effects in this package.
 
-To begin, install the package
-# ```{r, eval = FALSE}
-# install_github("emmagovan/cosimmrSTAN")
-# ```
-# 
-# Then load it in
-# ```{r, eval = FALSE}
-# library(cosimmrSTAN)
-# ```
+<!-- To begin, install the package -->
+<!-- ```{r, eval = FALSE} -->
+<!-- install_github("emmagovan/cosimmrSTAN") -->
+<!-- ``` -->
+<!-- Then load it in -->
+<!-- ```{r, eval = FALSE} -->
+<!-- library(cosimmrSTAN) -->
+<!-- ``` -->
 
 
-There are several data sets built into the package. We will use the alligator data set (from Nifong et al) for illustration.
+<!-- There are several data sets built into the package. We will use the alligator data set (from Nifong et al) for illustration. -->
+<!-- ```{r} -->
+<!-- data(alligator_data) -->
+<!-- ``` -->
+
+<!-- For our first example we will look at Length as a fixed effect. We first load in our data using the `cosimmrSTAN_load` function. -->
+<!-- ```{r} -->
+<!-- Length = alligator_data$length -->
+<!-- formula = alligator_data$mixtures ~ Length -->
+
+<!-- out<-cosimmrSTAN_load(formula, -->
+<!--                  source_names = alligator_data$source_names, -->
+<!--                  source_means = alligator_data$source_means, -->
+<!--                  source_sds = alligator_data$source_sds, -->
+<!--                  correction_means = alligator_data$TEF_means, -->
+<!--                  correction_sds = alligator_data$TEF_sds, -->
+<!--                  concentration_means = NULL, -->
+<!--                  scale_x = FALSE, -->
+<!--                  raw_source = FALSE, -->
+<!--                  random_effects = FALSE, -->
+<!--                  hierarchical_fitting = FALSE) -->
+
+<!-- ``` -->
+
+
+
+

@@ -1,7 +1,7 @@
 #I want to test the cosimmrSTAN_load function
 
 
-#Setup 1 - do the same as cosimmr basically
+#Setup 1 - do the same as cosimmr basically--------
 Length = alligator_data$length
 formula = alligator_data$mixtures ~ Length
 source_names = alligator_data$source_names
@@ -30,16 +30,16 @@ out<-cosimmrSTAN_load(formula,
                  scale_x = FALSE,
                  raw_source = FALSE,
                  random_effects = FALSE,
-                 hierarchical_fitting = TRUE,
+                 hierarchical_fitting = FALSE,
                  shape_sig = 1)
 
-out_1 = cosimmr_stan(out, error_type = "process+residual")
+out_1 = cosimmr_stan(out, error_type = "processxresidual")
 
 
 out2 = cosimmr_stan(out, type = "STAN_MCMC", error_type = "process+residual")
 
 
-##Setup 2 random effect
+##Setup random effect----------------
 formula = alligator_data$mixtures ~ 1|as.factor(alligator_data$sex)
 
 in_random<-cosimmrSTAN_load(formula,
@@ -68,39 +68,10 @@ out_1 = cosimmr_stan(out)
 out2 = cosimmr_stan(out, type = "STAN_MCMC")
 
 
-## Nested
-pack = as.factor(c(rep(1,21), rep(2,50), rep(3, 70), rep(4,40)))
-region = as.factor(c(rep(1, 71), rep(2,110)))
-formula2 = alligator_data$mixtures ~ 1|region/pack
-
-in_nest<-cosimmrSTAN_load(formula2,
-                      source_names = alligator_data$source_names,
-                      source_means = alligator_data$source_means,
-                      source_sds = alligator_data$source_sds,
-                      source = NULL,
-                      n_each_source = c(5,10),
-                      correction_means = alligator_data$TEF_means,
-                      correction_sds = alligator_data$TEF_sds,
-                      concentration_means = NULL,
-                      scale_x = FALSE,
-                      raw_source = FALSE,
-                      random_effects = TRUE,
-                      hierarchical_fitting = TRUE,
-                      shape_sig = 1)
-
-
-out_nest = cosimmr_stan(in_nest, error_type = "process+residual")
-
-
-out2 = cosimmr_stan(in_nest, type = "STAN_MCMC", error_type = "process+residual")
-out_nest_pxr = cosimmr_stan(in_nest)
-
-
-I out_nest_pxr mr_stan(in_nest, type = "STAN_MCMC")
 
 
 
-##SETUP wolves
+##SETUP wolves--------
 load("~/Documents/GitHub/testing_STAN_cosimmr/data/wolves_data.rda")
 wolves_consumer = wolves[[1]]
 wolves_discrimination = wolves[[2]]
@@ -108,7 +79,7 @@ wolves_sources = wolves[[3]]
 y = as.matrix(wolves_consumer[,c(1:2)])
 pack = as.factor(wolves_consumer$Pack)
 region = as.factor(wolves_consumer$Region)
-formula = y ~ (1|region/pack) -1
+formula = y ~ (1|pack)
 wolves_sources = wolves[[3]][c(1,4,7),] #Small for now - need to accept different sources at some point
 q = matrix(rep(1, 6), ncol = 2)
 s_mean = as.matrix(wolves_sources[,c(3,5)])
@@ -116,7 +87,7 @@ s_sd = as.matrix(wolves_sources[,c(4,6)])
 c_mean = as.matrix(wolves_discrimination[,c(2,4)])
 c_sd = as.matrix(wolves_discrimination[,c(3,5)])
 
-out_wolves = cosimmrSTAN_load(formula,
+in_wolves = cosimmrSTAN_load(formula,
                               source_names = wolves_sources$...1,
                               source_means = s_mean,
                               source_sds = s_sd,
@@ -131,80 +102,81 @@ out_wolves = cosimmrSTAN_load(formula,
 
 )
 
-a = lme4::glFormula(formula)
+out_wolves = cosimmr_stan(in_wolves)
 
-X_inner = t(as.matrix(a$reTrms$Zt))[,1:a$reTrms$nl[1]]
-X_region = t(as.matrix(a$reTrms$Zt))[,(a$reTrms$nl[1] +1):(a$reTrms$nl[1] + a$reTrms$nl[2])]
-
-stan_dat = list(
-  J = 2,
-  N = nrow(y),
-  K = nrow(s_mean),
-  L1 = ncol(X_inner),
-  L2 = ncol(X_region),
-  y = y,
-  q = q,
-  s_mean = s_mean,
-  c_mean = c_mean,
-  s_sd = s_sd,
-  c_sd = c_sd,
-  sigma_shape = c(1,1),
-  sigma_rate = c(1,1),
-  not_solo = 1,
-  X_intercept = a$X,
-  X_inner = X_inner,
-  X_outer = X_region,
-  region_for_pack = region_for_pack_output,
-  omicron_shape = c(1,1),
-  omicron_rate = c(1,1)
-)
+### Geese example------------------------
 
 
-fit <- stan(
-  file = "inst/stan/STAN_nested_2_random_effect_pxr_raw.stan",
-  data = stan_dat,
-  init = function() list(
-    sigma_raw = rep(1, J),
-    sigma_pack = matrix(1, K, L1),
-    sigma_region = rep(1, K),
-    mu_region = rep(1, K),
-    omicron = rep(1, J),
-    beta1 = matrix(1, K, L1),
-    beta2 = matrix(1, K, L2)
-  ),
-  chains = 1,
-  iter = 2000,
-  warmup = 1000,
-  verbose = TRUE
-)
+# Get the data
+library(readxl)
+path <- system.file("extdata", "geese_data.xls", package = "simmr")
+geese_data <- lapply(excel_sheets(path), read_excel, path = path)
+targets <- geese_data[[1]] #[1:20,]
+sources <- geese_data[[2]]
+TEFs <- geese_data[[3]]
+concdep <- geese_data[[4]]
+N <- nrow(targets)
+K <- nrow(sources)
+J <- 2
+L <- length(unique(targets$Time))
+Time = as.factor(targets$Time)
+y = as.matrix(targets[,1:2]) # Data matri
+q = concdep[,2:3] # cond dep matri
+s_mean = sources[,2:3] # source mean
+c_mean = TEFs[,2:3] # corr mean
+s_sd = sources[,4:5] # s_sd matri
+c_sd = TEFs[,4:5] # c_sd matri
+sigma_shape = rep(1, 2)
+sigma_rate = rep(1, 2)
+
+formula = y ~ (1|Time)
+
+source_means = s_mean
+source_sds = s_sd
+source = NULL
+correction_means = c_mean
+correction_sds = c_sd
+concentration_means = q
+scale_x = FALSE
+raw_source = FALSE
+random_effects = TRUE
+hierarchical_fitting = FALSE
+shape_sig = 1
+
+in_geese<-cosimmrSTAN_load(formula,
+                            source_names =sources$Sources,
+                            source_means = s_mean,
+                            source_sds = s_sd,
+                            source = NULL,
+                            correction_means = c_mean,
+                            correction_sds = c_sd,
+                            concentration_means = q,
+                            scale_x = FALSE,
+                            raw_source = FALSE,
+                            random_effects = TRUE,
+                            hierarchical_fitting = FALSE,
+                            shape_sig = 1)
+
+out_geese = cosimmr_stan(in_geese, error_type = "process+residual")
+
+Weight = targets$`Net Wt`
+formula2 = y ~ 1|Weight
+in_geese2<-cosimmrSTAN_load(formula2,
+                           source_names =sources$Sources,
+                           source_means = s_mean,
+                           source_sds = s_sd,
+                           source = NULL,
+                           correction_means = c_mean,
+                           correction_sds = c_sd,
+                           concentration_means = q,
+                           scale_x = FALSE,
+                           raw_source = FALSE,
+                           random_effects = FALSE,
+                           hierarchical_fitting = FALSE,
+                           shape_sig = 1)
+
+out_geese3 = cosimmr_stan(in_geese2, error_type = "process+residual")
 
 
-fit <- sampling(
-  object = stanmodels$STAN_nested_2_random_effect_pxr_raw,     # Use the precompiled model
-  data = stan_dat,
-  init = function() list(
-    sigma_raw = rep(1, J),
-    sigma_pack = matrix(1, K, L1),
-    sigma_region = rep(1, K),
-    mu_region = rep(1, K),
-    omicron = rep(1, J),
-    beta1 = matrix(1, K, L1),
-    beta2 = matrix(1, K, L2)
-  ),
-  chains = 1,
-  iter = 2000,
-  warmup = 1000,
-  verbose = TRUE
-)
 
 
-
-
-
-
-
-
-
-
-
-#devtools::build(args = c("--no-manual", "--no-resave-data", "--no-build-vignettes"), quiet = FALSE)
