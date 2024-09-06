@@ -19,7 +19,7 @@ data {
 
 parameters {
   vector<lower=0>[J] sigma_raw; // log raw sigma values
-  matrix[K, L] beta; // Matrix of coefficients
+  matrix[L,K] beta; // Matrix of coefficients
    vector<lower=0>[J] omicron;
   // matrix[N, K] f; // f matrix for CLR prior on p
 }
@@ -32,7 +32,7 @@ transformed parameters {
 
   for (i in 1:N) {
     for (k in 1:K) {
-      f[i, k] = dot_product(X[i,:], beta[k,:]);
+      f[i, k] = dot_product(X[i,:], beta[:,k]);
     }
   }
 
@@ -53,7 +53,7 @@ transformed parameters {
   // Prior on betas
   for (k in 1:K) {
     for (l in 1:L) {
-      beta[k,l] ~ normal(0, 1); // Prior for beta
+      beta[l,k] ~ normal(0, 1); // Prior for beta
     }
   }
 

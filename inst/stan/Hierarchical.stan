@@ -8,7 +8,7 @@ data {
 }
 
 parameters {
-   matrix[K, J] tmp_X; // Temporary matrix for chi-square random variables
+   matrix<lower=0>[K, J] tmp_X; // Temporary matrix for chi-square random variables
 
   matrix[K,J] mu; //true mean to be estimated
 }

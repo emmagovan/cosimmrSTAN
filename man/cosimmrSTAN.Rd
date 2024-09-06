@@ -2,7 +2,7 @@
 % Please edit documentation in R/cosimmrSTAN-package.R
 \name{cosimmrSTAN}
 \alias{cosimmrSTAN}
-\alias{cosimmr-package}
+\alias{cosimmrSTAN-package}
 \title{cosimmrSTAN: An R package for Stable Isotope Mixing Models}
 \description{
 cosimmrSTAN is a package that has been developed to allow for running of Stable

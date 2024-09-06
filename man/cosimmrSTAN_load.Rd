@@ -16,7 +16,6 @@ cosimmrSTAN_load(
   concentration_means = NULL,
   scale_x = TRUE,
   raw_source = FALSE,
-  random_effects = FALSE,
   hierarchical_fitting = FALSE,
   shape_sig = 1
 )
@@ -58,9 +57,6 @@ provided these are all set to 1.}
 the model using the original x values. Defaults to TRUE.}
 
 \item{raw_source}{If you are using raw source data or means. Defaults to FALSE.}
-
-\item{random_effects}{Whether or not the formula provided includes random effects.
-Defaults to FALSE.}
 
 \item{hierarchical_fitting}{Whether to hierarchically fit the source data. Defaults
 to FALSE. Requires n_sources to be provided.}
@@ -110,8 +106,7 @@ cosimmrSTAN_1 <- with(
     source_sds = source_sds,
     correction_means = correction_means,
     correction_sds = correction_sds,
-    concentration_means = concentration_means,
-    scale_x = TRUE
+    concentration_means = concentration_means
   )
 )
 
@@ -121,7 +116,7 @@ print(cosimmrSTAN_1)
 }
 }
 \seealso{
-See \code{\link{cosimmr_ffvb}} for complete examples.
+See \code{\link{cosimmr_stan}} for complete examples.
 }
 \author{
 Emma Govan <emmagovan@gmail.com>, Andrew Parnell

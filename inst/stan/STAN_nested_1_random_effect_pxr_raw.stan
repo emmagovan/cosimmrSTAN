@@ -2,7 +2,8 @@ data {
   int<lower=1> J; // Number of isotopes
   int<lower=1> N; // Number of observations per group
   int<lower=1> K; // Dimension of p and q
-  int<lower=1> L1; // Number of covariates in inner
+  int<lower=1> L1; // Number cols of X_fixed
+  int<lower=1> L2; //N cols of X_random
   matrix[N, J] y; // Data matrix
   matrix[K, J] q; // q matrix
   matrix[K, J] s_mean; // s_mean matrix
@@ -12,18 +13,19 @@ data {
   vector[J] sigma_shape; // Prior shape for sigma
   vector[J] sigma_rate; // Prior rate for sigma
   real<lower=0> not_solo; // Adjustment factor for sigma
-    matrix[N, 1] X_int; // Intercept
-  matrix[N, L1] X_inner; // Covariates matrix for pack/inside/nested one
+    matrix[N, L1] X_fixed; // Intercept
+  matrix[N, L2] X_random; // Covariates matrix for pack/inside/nested one
+  real<lower=0.001> cauchy_scale;
     vector[J] omicron_shape; // Prior shape for omicron
   vector[J] omicron_rate; // Prior rate for omicron
 }
 
 parameters {
   vector<lower=0>[J] sigma_raw; // log raw sigma values
-  vector<lower=0>[L1] sigma_pack; // log raw sigma values
+  vector<lower=0>[K] omega; // log raw sigma values
     vector<lower=0>[J] omicron;
-    matrix[K, 1] beta0;
-  matrix[K, L1] beta1; // Matrix of coefficients for inside values (also have intercept here I guess??)
+    matrix[L1, K] beta0;
+  matrix[L2, K] beta1; // Matrix of coefficients for inside values (also have intercept here I guess??)
 }
 
 transformed parameters {
@@ -34,7 +36,7 @@ transformed parameters {
 
   for (i in 1:N) {
     for (k in 1:K) {
-          f[i,k] = dot_product(X_int[i,:], beta0[k,:]) + dot_product(X_inner[i,:], beta1[k,:]);
+          f[i,k] = dot_product(X_fixed[i,:], beta0[:,k]) + dot_product(X_random[i,:], beta1[:,k]);
 
     }
   }
@@ -54,20 +56,17 @@ transformed parameters {
 
  model {
   // Prior on betas
-  for (k in 1:K) {
-    beta0[k,1] ~ normal(0,1);
 
-    for (l in 1:L1) {
-      beta1[k,l] ~ normal(0, (sigma_pack[l])); // Prior for beta
+   to_vector(beta0) ~ normal(0,1);
 
-    }
+  for (k in 1:K){
 
-  }
-
+  beta1[,k] ~ normal(0, omega[k]); // Prior for beta
+  omega[k] ~ cauchy(0, cauchy_scale);
+}
 
 
-   //To match mixsiar
-  sigma_pack ~ uniform(0,20); //half t
+
 
   // Prior on sigma_raw
   sigma_raw ~ gamma(sigma_shape, sigma_rate);

@@ -113,7 +113,7 @@ plot(cosimmrSTAN_3, tracers = c(1, 3))
 }
 \seealso{
 See \code{\link{plot.cosimmrSTAN_output}} for plotting the output of a
-simmr run. See \code{\link{cosimmrSTAN_ffvb}} for running a cosimmr object once the
+simmr run. See \code{\link{cosimmr_stan}} for running a cosimmr object once the
 iso-space is deemed acceptable.
 }
 \author{

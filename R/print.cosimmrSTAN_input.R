@@ -5,22 +5,21 @@
 #'
 #'#' @author Emma Govan <emmagovan@@gmail.com> Andrew Parnell
 #'
-#' @seealso \code{\link{cosimmr_load}} for creating objects suitable for this
+#' @seealso \code{\link{cosimmrSTAN_load}} for creating objects suitable for this
 #' function
 #'
 #' @return A neat presentation of your simmr object.
-#' @export print.cosimmr_input
-print.cosimmr_input <-
+#' @export print.cosimmrSTAN_input
+print.cosimmrSTAN_input <-
   function(x, ...) {
-    if(inherits(x, "cosimmr_input") == TRUE){
-    message("This is a valid simmr input object with ")
+    if(inherits(x, "cosimmrSTAN_input") == TRUE){
+    message("This is a valid cosimmrSTAN input object with ")
     message(paste(x$n_obs, " observations, "))
     message(paste(ncol(x$x_scaled), " covariates, "))
     message(paste(x$n_tracers, "tracers, and "))
     message(paste(x$n_sources, "sources.\n"))
-    message(" The formula is ") 
-    message( "c(",paste(colnames(x$mixtures), collapse = ", "), ")~",
-            paste(colnames(x$x_scaled), collapse = " + "))
+    message(" The formula is ")
+    print((x$formula))
     message("\nThe source names are: ")
     print(x$source_names, sep = ", ")
     message(".\n")

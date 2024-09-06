@@ -7,11 +7,12 @@
 cosimmr_stan(
   cosimmrSTAN_in,
   type = "STAN_VB",
-  error_type = "processxresidual",
+  error_type = "process+residual",
   prior_control = list(sigma_shape = c(rep(1, cosimmrSTAN_in$n_tracers)), sigma_rate =
     c(rep(1, cosimmrSTAN_in$n_tracers)), omicron_shape = c(rep(1,
-    cosimmrSTAN_in$n_tracers)), omicron_rate = c(rep(1, cosimmrSTAN_in$n_tracers))),
-  n_samples = 3600
+    cosimmrSTAN_in$n_tracers)), omicron_rate = c(rep(1, cosimmrSTAN_in$n_tracers)),
+    cauchy_scale = 5),
+  vb_control = list(n_samples = 10000, adapt_iter = 30000, algorithm = "fullrank")
 )
 }
 \arguments{
@@ -20,13 +21,18 @@ cosimmr_stan(
 \item{type}{What type of model to run using STAN. Options are 'STAN_VB}
 
 \item{error_type}{Whether to use 'processxresidual' error term or
-'process+residual' term. Defaults to 'processxresidual'}
+'process+residual' term. Defaults to 'process+residual'}
 
 \item{prior_control}{A list of values including arguments named \code{sigma_shape}
-(prior values for sigma shape), \code{sigma_rate} (prior values for sigma rate)}
+(prior values for sigma shape), \code{sigma_rate} (prior values for sigma rate),
+\code{omicron_shape} (prior values for omicron shape), \code{omicron_rate}
+(prior values for omicron rate), \code{cauchy_scale} (prior value for half-cauchy
+distribution on error of random effects)}
 
-\item{n_samples}{Number of samples to output. Defaults to 3600.
-nested within each other. Defaults to FALSE.}
+\item{vb_control}{A list of values including arguments named \code{n_samples}
+(the number of samples) to use in stan VB (defaults to 10000)), \code{adapt_iter}
+(the number of adaptive iterations (defaults to 30000)), and \code{algorithm}
+(the VB algorithm to use. Defaults to "fullrank")}
 }
 \value{
 an object of class \code{cosimmrSTAN_output} with two named top-level
@@ -81,8 +87,7 @@ summary(cosimmrSTAN_1_out, type = "statistics")
 ans <- summary(cosimmrSTAN_1_out, type = c("quantiles", "statistics"))
 
 # Plot
-plot(cosimmrSTAN_1_out, type = "beta_boxplot")
-plot(cosimmrSTAN_1_out, type = "beta_histogram")
+plot(cosimmrSTAN_1_out, type = "prop_density")
 
 }
 }

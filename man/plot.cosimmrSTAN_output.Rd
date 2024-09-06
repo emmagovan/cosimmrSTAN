@@ -6,12 +6,12 @@
 \usage{
 \method{plot}{cosimmrSTAN_output}(
   x,
-  type = c("isospace", "prop_histogram", "prop_density"),
+  type = c("isospace", "prop_histogram", "prop_density", "beta_fixed_histogram",
+    "beta_fixed_boxplot", "beta_random_histogram", "beta_random_boxplot"),
   obs = 1,
   binwidth = 0.05,
   alpha = 0.5,
   title = NULL,
-  n_output = 3600,
   ...
 )
 }
@@ -20,7 +20,8 @@
 \code{\link{cosimmr_stan}}.}
 
 \item{type}{The type of plot required. Can be one or more of 'isospace',
-'prob_histogram', 'prob_density'}
+'prop_histogram', 'prop_density', 'beta_fixed_histogram', 'beta_fixed_boxplot',
+'beta_random_histogram', 'beta_random_boxplot'}
 
 \item{obs}{The observation number you wish to plot}
 
@@ -31,12 +32,12 @@ matrix plots}
 
 \item{title}{The title of the plot.}
 
-\item{n_output}{The number of theta samples you wish to plot with. Defaults to 3600}
-
 \item{...}{Currently not used}
 }
 \value{
-one or more of 'isospace', 'beta_histogram', 'beta_boxplot', 'prop_histogram', 'prop_density', or 'covariates_plot'
+one or more of 'isospace', 'beta_fixed_histogram',
+'beta_fixed_boxplot', 'prop_histogram', 'prop_density', 'beta_random_boxplot'
+or 'beta_random_histogram'
 }
 \description{
 This function allows for 4 different types of plots of the simmr output
@@ -80,10 +81,10 @@ plot(simmr_1_out, type = c("isospace", "beta_hist"))
 }
 }
 \seealso{
-See  \code{\link{cosimmr_ffvb}} for
+See  \code{\link{cosimmr_stan}} for
 creating objects suitable for this function, and many more examples. See
-also \code{\link{cosimmr_load}} for creating simmr objects,
-\code{\link{plot.cosimmr_input}} for creating isospace plots.
+also \code{\link{cosimmrSTAN_load}} for creating simmr objects,
+\code{\link{plot.cosimmrSTAN_input}} for creating isospace plots.
 }
 \author{
 Emma Govan <emmagovan@gmail.com>, Andrew Parnell

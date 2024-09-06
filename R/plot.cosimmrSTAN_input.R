@@ -40,7 +40,7 @@
 #'
 #' @author Emma Govan <emmagovan@@gmail.com>, Andrew Parnell
 #' @seealso See \code{\link{plot.cosimmrSTAN_output}} for plotting the output of a
-#' simmr run. See \code{\link{cosimmrSTAN_ffvb}} for running a cosimmr object once the
+#' simmr run. See \code{\link{cosimmr_stan}} for running a cosimmr object once the
 #' iso-space is deemed acceptable.
 #' @examples
 #' \donttest{
@@ -101,7 +101,7 @@ plot.cosimmrSTAN_input <-
 
     #This selects the correct column from the covariates df to colour by
     if(colour_by_cov == TRUE){
-      cov_selected_col = subset(as.matrix(x$covariates_df), select =  cov_name)
+      cov_selected_col = subset((x$covariates_df), select =  cov_name)
     }
 
     curr_mix <- x$mixtures
@@ -159,7 +159,7 @@ plot.cosimmrSTAN_input <-
             guides(color = guide_legend(override.aes = list(linetype = c(rep(0, 1), rep(1,(nlevels(df$Source)-1)))))) +
             ggargs
         }
-        else if(is.numeric(cov_selected_col)){
+        else if(is.numeric(cov_selected_col[,1])){
 
           # split data$Source into mixtures and sources
           group_data <- df[-c(1:x$n_sources), ]

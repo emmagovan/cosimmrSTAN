@@ -9,11 +9,16 @@
 #'@param cosimmrSTAN_in An object created via the function \code{\link{cosimmrSTAN_load}}
 #'@param type What type of model to run using STAN. Options are 'STAN_VB
 #'@param error_type Whether to use 'processxresidual' error term or
-#''process+residual' term. Defaults to 'processxresidual'
+#''process+residual' term. Defaults to 'process+residual'
 #'@param prior_control A list of values including arguments named \code{sigma_shape}
-#'(prior values for sigma shape), \code{sigma_rate} (prior values for sigma rate)
-#'@param n_samples Number of samples to output. Defaults to 3600.
-#'nested within each other. Defaults to FALSE.
+#'(prior values for sigma shape), \code{sigma_rate} (prior values for sigma rate),
+#'\code{omicron_shape} (prior values for omicron shape), \code{omicron_rate}
+#'(prior values for omicron rate), \code{cauchy_scale} (prior value for half-cauchy
+#'distribution on error of random effects)
+#'@param vb_control A list of values including arguments named \code{n_samples}
+#'(the number of samples) to use in stan VB (defaults to 10000)), \code{adapt_iter}
+#'(the number of adaptive iterations (defaults to 30000)), and \code{algorithm}
+#'(the VB algorithm to use. Defaults to "fullrank")
 #'
 #'@return an object of class \code{cosimmrSTAN_output} with two named top-level
 #'components: \item{input}{The \code{cosimmrSTAN_input} object given to the
@@ -77,21 +82,25 @@
 #' ans <- summary(cosimmrSTAN_1_out, type = c("quantiles", "statistics"))
 #'
 #' # Plot
-#' plot(cosimmrSTAN_1_out, type = "beta_boxplot")
-#' plot(cosimmrSTAN_1_out, type = "beta_histogram")
+#' plot(cosimmrSTAN_1_out, type = "prop_density")
+
 #'
 #'}
 #' @export cosimmr_stan
 cosimmr_stan <- function(cosimmrSTAN_in,
                          type = "STAN_VB",
-                         error_type = "processxresidual",
+                         error_type = "process+residual",
                          prior_control = list(
                           sigma_shape = c(rep(1, cosimmrSTAN_in$n_tracers)),
                           sigma_rate = c(rep(1, cosimmrSTAN_in$n_tracers)),
                           omicron_shape = c(rep(1, cosimmrSTAN_in$n_tracers)),
-                          omicron_rate = c(rep(1, cosimmrSTAN_in$n_tracers))
+                          omicron_rate = c(rep(1, cosimmrSTAN_in$n_tracers)),
+                          cauchy_scale = 5
                          ),
-                         n_samples = 3600
+                         vb_control = list(
+                         n_samples = 10000,
+                         adapt_iter = 30000,
+                         algorithm = "fullrank")
                          ){
 
   #Core detection - potentially have this as an option people can turn on and off?
@@ -119,7 +128,8 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             J = cosimmrSTAN_in$n_tracers,
             N = cosimmrSTAN_in$n_obs,
             K = cosimmrSTAN_in$n_sources,
-            L1 = ncol(cosimmrSTAN_in$X_inner),
+            L1 = ncol(cosimmrSTAN_in$x_scaled),
+            L2 = ncol(cosimmrSTAN_in$X_random),
             y = cosimmrSTAN_in$mixtures,
             q = cosimmrSTAN_in$concentration_means,
             s_mean = cosimmrSTAN_in$source_means,
@@ -129,8 +139,9 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             sigma_shape = prior_control$sigma_shape,
             sigma_rate = prior_control$sigma_rate,
             not_solo = solo,
-            X_int = cosimmrSTAN_in$X_intercept,
-            X_inner = cosimmrSTAN_in$X_inner,
+            X_fixed = cosimmrSTAN_in$x_scaled,
+            X_random = cosimmrSTAN_in$X_random,
+            cauchy_scale = prior_control$cauchy_scale,
             omicron_shape = prior_control$omicron_shape,
             omicron_rate = prior_control$omicron_rate
           )
@@ -150,10 +161,10 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           which_omicron <- grep('omicron', names(fit_opt$par))
 
           beta0_start_opt <- structure(fit_opt$par[which_beta0],
-                                       dim  = c(stan_dat$K, 1))
+                                       dim  = c(stan_dat$L1, stan_dat$K))
 
           beta1_start_opt <- structure(fit_opt$par[which_beta1],
-                                       dim  = c(stan_dat$K, stan_dat$L1))
+                                       dim  = c(stan_dat$L2, stan_dat$K))
 
 
 
@@ -163,8 +174,10 @@ cosimmr_stan <- function(cosimmrSTAN_in,
 
 
           fit_vb <- rstan::vb(
-            model, data = stan_dat, output_samples = n_samples,
-            adapt_iter = 30000,
+            model, data = stan_dat,
+            output_samples = vb_control$n_samples,
+            adapt_iter = vb_control$adapt_iter,
+            algorithm = vb_control$algorithm,
             init = list('beta0' = beta0_start_opt,
                         'beta1' = beta1_start_opt,
                         'sigma_raw' = sigma_raw_start_opt,
@@ -175,8 +188,8 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           extracted_samples = rstan::extract(fit_vb)
 
           #Want to extract all the betas in a sensible way first I think
-          #alpha_ans = extracted_samples$alpha
-          beta1_ans = extracted_samples$beta1 # This is n_samples * K * n_covariates
+          beta_fixed = extracted_samples$beta0
+          beta_random = extracted_samples$beta1 # This is n_samples * K * n_covariates
           sigma_ans = extracted_samples$sigma
           omicron_ans = extracted_samples$omicron
           p_sample = extracted_samples$p
@@ -214,7 +227,8 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             J = cosimmrSTAN_in$n_tracers,
             N = cosimmrSTAN_in$n_obs,
             K = cosimmrSTAN_in$n_sources,
-            L1 = ncol(cosimmrSTAN_in$X_inner),
+            L1 = ncol(cosimmrSTAN_in$x_scaled),
+            L2 = ncol(cosimmrSTAN_in$X_random),
             y = cosimmrSTAN_in$mixtures,
             q = cosimmrSTAN_in$concentration_means,
             s_mean = cosimmrSTAN_in$source_means,
@@ -224,8 +238,9 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             sigma_shape = prior_control$sigma_shape,
             sigma_rate = prior_control$sigma_rate,
             not_solo = solo,
-            X_int = cosimmrSTAN_in$X_intercept,
-            X_inner = cosimmrSTAN_in$X_inner
+            X_fixed = cosimmrSTAN_in$x_scaled,
+            X_random = cosimmrSTAN_in$X_random,
+            cauchy_scale = prior_control$cauchy_scale
           )
           model = stanmodels$STAN_nested_1_random_effect_pandr
 
@@ -253,8 +268,10 @@ cosimmr_stan <- function(cosimmrSTAN_in,
 
 
           fit_vb <- rstan::vb(
-            model, data = stan_dat, output_samples = n_samples,
-            adapt_iter = 30000,
+            model, data = stan_dat,
+            output_samples = vb_control$n_samples,
+            adapt_iter = vb_control$adapt_iter,
+            algorithm = vb_control$algorithm,
             init = list('beta0' = beta0_start_opt,
                         'beta1' = beta1_start_opt,
                         'sigma_raw' = sigma_raw_start_opt,
@@ -266,8 +283,8 @@ cosimmr_stan <- function(cosimmrSTAN_in,
 
           #Want to extract all the betas in a sensible way first I think
           #alpha_ans = extracted_samples$alpha
-          beta0_ans = extracted_samples$beta0
-          beta1_ans = extracted_samples$beta1 # This is n_samples * K * n_covariates
+          beta_fixed = extracted_samples$beta0
+          beta1_random = extracted_samples$beta1 # This is n_samples * K * n_covariates
           sigma_ans = extracted_samples$sigma
           omicron_ans = NULL
           p_sample = extracted_samples$p
@@ -353,8 +370,10 @@ cosimmr_stan <- function(cosimmrSTAN_in,
       # )
 
       fit_vb <- rstan::vb(
-        model, data = stan_dat, output_samples = n_samples,
-        adapt_iter = 30000,
+        model, data = stan_dat,
+        output_samples = vb_control$n_samples,
+        adapt_iter = vb_control$adapt_iter,
+        algorithm = vb_control$algorithm,
         init = list('beta' = beta1_start_opt,
                     'sigma_raw' = sigma_raw_start_opt,
                     'omicron' = omicron_start_opt),
@@ -367,10 +386,10 @@ cosimmr_stan <- function(cosimmrSTAN_in,
 
       #Want to extract all the betas in a sensible way first I think
       #alpha_ans = extracted_samples$alpha
-      beta1_ans = extracted_samples$beta # This is n_samples * K * n_covariates
+      beta_fixed = extracted_samples$beta # This is n_samples * K * n_covariates
       sigma_ans = extracted_samples$sigma
       omicron_ans = extracted_samples$omicron
-      beta0_ans = NULL
+      beta_random = NULL
       p_sample = extracted_samples$p
 
       #CONVERT TO F
@@ -460,8 +479,10 @@ cosimmr_stan <- function(cosimmrSTAN_in,
        #    refresh = FALSE)
 
        fit_vb <- rstan::vb(
-         model, data = stan_dat, output_samples = n_samples,
-         adapt_iter = 30000,
+         model, data = stan_dat,
+         output_samples = vb_control$n_samples,
+         adapt_iter = vb_control$adapt_iter,
+         algorithm = vb_control$algorithm,
          init = list('beta' = beta1_start_opt,
                      'sigma_raw' = sigma_raw_start_opt),
          refresh = FALSE
@@ -472,10 +493,10 @@ cosimmr_stan <- function(cosimmrSTAN_in,
 
       #Want to extract all the betas in a sensible way first I think
       #alpha_ans = extracted_samples$alpha
-      beta1_ans = extracted_samples$beta # This is n_samples * K * n_covariates
+      beta_fixed = extracted_samples$beta # This is n_samples * K * n_covariates
       sigma_ans = extracted_samples$sigma
       omicron_ans = NULL
-      beta0_ans = NULL
+      beta_random = NULL
       p_sample = extracted_samples$p
 
       #CONVERT TO F
@@ -513,6 +534,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
     } else if(type == "STAN_MCMC"){
 
 
+
       if(cosimmrSTAN_in$random_effects == TRUE){
         if(error_type == "processxresidual"){
           #This is not nested random effects pxr WORKING
@@ -520,7 +542,8 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             J = cosimmrSTAN_in$n_tracers,
             N = cosimmrSTAN_in$n_obs,
             K = cosimmrSTAN_in$n_sources,
-            L1 = ncol(cosimmrSTAN_in$X_inner),
+            L1 = ncol(cosimmrSTAN_in$x_scaled),
+            L2 = ncol(cosimmrSTAN_in$X_random),
             y = cosimmrSTAN_in$mixtures,
             q = cosimmrSTAN_in$concentration_means,
             s_mean = cosimmrSTAN_in$source_means,
@@ -530,8 +553,9 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             sigma_shape = prior_control$sigma_shape,
             sigma_rate = prior_control$sigma_rate,
             not_solo = solo,
-            X_int = cosimmrSTAN_in$X_intercept,
-            X_inner = cosimmrSTAN_in$X_inner,
+            X_fixed = cosimmrSTAN_in$x_scaled,
+            X_random = cosimmrSTAN_in$X_random,
+            cauchy_scale = prior_control$cauchy_scale,
             omicron_shape = prior_control$omicron_shape,
             omicron_rate = prior_control$omicron_rate
           )
@@ -539,26 +563,72 @@ cosimmr_stan <- function(cosimmrSTAN_in,
 
           model = stanmodels$STAN_nested_1_random_effect_pxr_raw
 
-          fit_mcmc <- sampling(
-            model,
-            data = stan_dat,
-            seed = 1,
-            iter = 5000,
-            cores = 1
+
+          fit_opt <- rstan::optimizing(model,
+                                       data = stan_dat)
+
+          which_beta0 <- grep('beta0', names(fit_opt$par))
+          which_beta1 <- grep('beta1', names(fit_opt$par))
+
+
+          which_sigma <- grep('sigma', names(fit_opt$par))
+          which_omicron <- grep('omicron', names(fit_opt$par))
+
+          beta0_start_opt <- structure(fit_opt$par[which_beta0],
+                                       dim  = c(stan_dat$L1, stan_dat$K))
+
+          beta1_start_opt <- structure(fit_opt$par[which_beta1],
+                                       dim  = c(stan_dat$L2, stan_dat$K))
+
+
+
+          sigma_raw_start_opt <- fit_opt$par[which_sigma][1:stan_dat$J]
+          omicron_start_opt <- fit_opt$par[which_omicron][1:stan_dat$J]
+
+
+
+          fit_vb <- rstan::vb(
+            model, data = stan_dat, output_samples = n_samples,
+            adapt_iter = 30000,
+            init = list('beta0' = beta0_start_opt,
+                        'beta1' = beta1_start_opt,
+                        'sigma_raw' = sigma_raw_start_opt,
+                        'omicron' = omicron_start_opt),
+            refresh = FALSE
           )
 
-          extracted_samples = rstan::extract(fit_mcmc)
-
+          extracted_samples = rstan::extract(fit_vb)
 
           #Want to extract all the betas in a sensible way first I think
-          #alpha_ans = extracted_samples$alpha
-          beta0_ans = extracted_samples$beta0
-          beta1_ans = extracted_samples$beta1 # This is n_samples * K * n_covariates
+          beta_fixed = extracted_samples$beta0
+          beta_random = extracted_samples$beta1 # This is n_samples * K * n_covariates
           sigma_ans = extracted_samples$sigma
           omicron_ans = extracted_samples$omicron
           p_sample = extracted_samples$p
 
+          #CONVERT TO F
+          #f is x_inner * beta1 + x_outer * beta_2
+          #p should be n_ind * n_samples * K
+          # f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, n_samples))
+          #
+          # for(i in 1:cosimmrSTAN_in$n_obs){
+          #   for(k in 1: cosimmrSTAN_in$n_sources){
+          #     for(s in 1:n_samples){
+          #       f[i,k,s] =  X_inner[i,] %*% beta1_ans[s,k,]
+          #     }
+          #   }
+          # }
 
+          #Then each p is sum f / sum exp f
+
+          # p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, n_samples,  cosimmrSTAN_in$n_sources))
+          #
+          # for(j in 1:n_samples){
+          #   for (n_obs in 1:cosimmrSTAN_in$n_obs) {
+          #     p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
+          #   }
+          # }
+          #
 
 
 
@@ -569,7 +639,8 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             J = cosimmrSTAN_in$n_tracers,
             N = cosimmrSTAN_in$n_obs,
             K = cosimmrSTAN_in$n_sources,
-            L1 = ncol(cosimmrSTAN_in$X_inner),
+            L1 = ncol(cosimmrSTAN_in$x_scaled),
+            L2 = ncol(cosimmrSTAN_in$X_random),
             y = cosimmrSTAN_in$mixtures,
             q = cosimmrSTAN_in$concentration_means,
             s_mean = cosimmrSTAN_in$source_means,
@@ -579,25 +650,51 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             sigma_shape = prior_control$sigma_shape,
             sigma_rate = prior_control$sigma_rate,
             not_solo = solo,
-            X_int = cosimmrSTAN_in$X_intercept,
-            X_inner = cosimmrSTAN_in$X_inner
+            X_fixed = cosimmrSTAN_in$x_scaled,
+            X_random = cosimmrSTAN_in$X_random,
+            cauchy_scale = prior_control$cauchy_scale
           )
           model = stanmodels$STAN_nested_1_random_effect_pandr
 
-          fit_mcmc <- sampling(
-            model,
-            data = stan_dat,
-            seed = 1,
-            iter = 5000,
-            cores = 1
+          fit_opt <- rstan::optimizing(model,
+                                       data = stan_dat)
+
+          which_beta0 <- grep('beta0', names(fit_opt$par))
+          which_beta1 <- grep('beta1', names(fit_opt$par))
+
+
+          which_sigma <- grep('sigma', names(fit_opt$par))
+          which_omicron <- grep('omicron', names(fit_opt$par))
+
+          beta0_start_opt <- structure(fit_opt$par[which_beta0],
+                                       dim  = c(stan_dat$K, 1))
+
+          beta1_start_opt <- structure(fit_opt$par[which_beta1],
+                                       dim  = c(stan_dat$K, stan_dat$L1))
+
+
+
+          sigma_raw_start_opt <- fit_opt$par[which_sigma][1:stan_dat$J]
+          omicron_start_opt <- fit_opt$par[which_omicron][1:stan_dat$J]
+
+
+
+          fit_vb <- rstan::vb(
+            model, data = stan_dat, output_samples = n_samples,
+            adapt_iter = 30000,
+            init = list('beta0' = beta0_start_opt,
+                        'beta1' = beta1_start_opt,
+                        'sigma_raw' = sigma_raw_start_opt,
+                        'omicron' = omicron_start_opt),
+            refresh = FALSE
           )
 
-          extracted_samples = rstan::extract(fit_mcmc)
+          extracted_samples = rstan::extract(fit_vb)
 
           #Want to extract all the betas in a sensible way first I think
           #alpha_ans = extracted_samples$alpha
-          beta1_ans = extracted_samples$beta1 # This is n_samples * K * n_covariates
-          beta0_ans = extracted_samples$beta0
+          beta_fixed = extracted_samples$beta0
+          beta1_random = extracted_samples$beta1 # This is n_samples * K * n_covariates
           sigma_ans = extracted_samples$sigma
           omicron_ans = NULL
           p_sample = extracted_samples$p
@@ -605,25 +702,25 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           #CONVERT TO F
           #f is x_inner * beta1 + x_outer * beta_2
           #p should be n_ind * n_samples * K
-        #   f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, n_samples))
-        #
-        #   for(i in 1:cosimmrSTAN_in$n_obs){
-        #     for(k in 1: cosimmrSTAN_in$n_sources){
-        #       for(s in 1:n_samples){
-        #         f[i,k,s] =  cosimmrSTAN_in$X_inner[i,] %*% beta1_ans[s,k,]
-        #       }
-        #     }
-        #   }
-        #
-        #   #Then each p is sum f / sum exp f
-        #
-        #   p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, n_samples,  cosimmrSTAN_in$n_sources))
-        #
-        #   for(j in 1:n_samples){
-        #     for (n_obs in 1:cosimmrSTAN_in$n_obs) {
-        #       p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
-        #     }
-        #   }
+          # f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, n_samples))
+          #
+          # for(i in 1:cosimmrSTAN_in$n_obs){
+          #   for(k in 1: cosimmrSTAN_in$n_sources){
+          #     for(s in 1:n_samples){
+          #       f[i,k,s] =  cosimmrSTAN_in$X_inner[i,] %*% beta1_ans[s,k,]
+          #     }
+          #   }
+          # }
+          #
+          # #Then each p is sum f / sum exp f
+          #
+          # p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, n_samples,  cosimmrSTAN_in$n_sources))
+          #
+          # for(j in 1:n_samples){
+          #   for (n_obs in 1:cosimmrSTAN_in$n_obs) {
+          #     p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
+          #   }
+          # }
         }
 
 
@@ -650,22 +747,57 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           )
 
           model = stanmodels$STAN_VB_pxr_raw
-          fit_mcmc <- sampling(
-            model,
-            data = stan_dat,
-            seed = 1,
-            iter = 5000,
-            cores = 1
+
+          fit_opt <- rstan::optimizing(model,
+                                       data = stan_dat)
+
+
+          which_beta <- grep('beta', names(fit_opt$par))
+
+
+          which_sigma <- grep('sigma', names(fit_opt$par))
+          which_omicron <- grep('omicron', names(fit_opt$par))
+
+
+          beta1_start_opt <- structure(fit_opt$par[which_beta],
+                                       dim  = c(stan_dat$K, stan_dat$L))
+
+
+
+          sigma_raw_start_opt <- fit_opt$par[which_sigma][1:stan_dat$J]
+          omicron_start_opt <- fit_opt$par[which_omicron][1:stan_dat$J]
+
+
+          # fit_vb <- rstan::vb(
+          #   model, data = stan_dat,
+          #   algorithm = 'fullrank',
+          #   pars = c('beta', 'sigma', 'omicron'),
+          #   init = list('beta' = beta1_start_opt,
+          #               'sigma' = sigma_raw_start_opt,
+          #               'omicron' = omicron_start_opt),
+          #   tol_rel_obj = 0.0000001, #convergence tolerance on the relative norm of the objective
+          #   output_samples = n_samples
+          # )
+
+          fit_vb <- rstan::vb(
+            model, data = stan_dat, output_samples = n_samples,
+            adapt_iter = 30000,
+            init = list('beta' = beta1_start_opt,
+                        'sigma_raw' = sigma_raw_start_opt,
+                        'omicron' = omicron_start_opt),
+            refresh = FALSE
           )
 
-          extracted_samples = rstan::extract(fit_mcmc)
+
+
+          extracted_samples = rstan::extract(fit_vb)
 
           #Want to extract all the betas in a sensible way first I think
           #alpha_ans = extracted_samples$alpha
-          beta1_ans = extracted_samples$beta # This is n_samples * K * n_covariates
-          beta0_ans = NULL
+          beta_fixed = extracted_samples$beta # This is n_samples * K * n_covariates
           sigma_ans = extracted_samples$sigma
           omicron_ans = extracted_samples$omicron
+          beta_random = NULL
           p_sample = extracted_samples$p
 
           #CONVERT TO F
@@ -716,6 +848,20 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           model = stanmodels$STAN_VB_pandr_raw
 
 
+          fit_opt <- rstan::optimizing(model,
+                                       data = stan_dat)
+
+          which_beta1 <- grep('beta', names(fit_opt$par))
+
+
+          which_sigma <- grep('sigma', names(fit_opt$par))
+
+          beta1_start_opt <- structure(fit_opt$par[which_beta1],
+                                       dim  = c(stan_dat$K, stan_dat$L))
+
+          sigma_raw_start_opt <- fit_opt$par[which_sigma][1:2]
+
+
           fit_mcmc <- sampling(
             model,
             data = stan_dat,
@@ -725,37 +871,15 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           )
 
           extracted_samples = rstan::extract(fit_mcmc)
-          #Want to extract all the betas in a sensible way first I think
-          #alpha_ans = extracted_samples$alpha
-          beta1_ans = extracted_samples$beta # This is n_samples * K * n_covariates
-          beta0_ans = NULL
+
+          beta_fixed = extracted_samples$beta # This is n_samples * K * n_covariates
           sigma_ans = extracted_samples$sigma
           omicron_ans = NULL
+          beta_random = NULL
           p_sample = extracted_samples$p
 
-          #CONVERT TO F
-          #f is x_inner * beta1 + x_outer * beta_2
-          #p should be n_ind * n_samples * K
-          # f = array(NA, dim = c(cosimmrSTAN_in$n_obs, cosimmrSTAN_in$n_sources, n_samples))
-          #
-          # for(i in 1:cosimmrSTAN_in$n_obs){
-          #   for(k in 1: cosimmrSTAN_in$n_sources){
-          #     for(s in 1:n_samples){
-          #       f[i,k,s] =  cosimmrSTAN_in$x_scaled[i,] %*% beta1_ans[s,k,]
-          #     }
-          #   }
-          # }
-          #
-          # #Then each p is sum f / sum exp f
-          #
-          # p_sample = array(NA, dim = c(cosimmrSTAN_in$n_obs, n_samples,  cosimmrSTAN_in$n_sources))
-          #
-          # for(j in 1:n_samples){
-          #   for (n_obs in 1:cosimmrSTAN_in$n_obs) {
-          #     p_sample[n_obs,j, ] <- exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]) / (sum((exp(f[n_obs,1: cosimmrSTAN_in$n_sources, j]))))
-          #   }
-          # }
-          #
+
+
 
 
 
@@ -764,17 +888,25 @@ cosimmr_stan <- function(cosimmrSTAN_in,
 
 
 
+      }
+
+
+
+
+
    ### COPY VB WHEN WORKING AND JUST CHANGE TO MCMC
 
 
   }
-}
+
   mylist <- list(
     source_names = cosimmrSTAN_in$source_names,
     p = p_sample,
-    beta1_ans = beta1_ans,
-    sigma_ans = sigma_ans,
-    omicron_ans = omicron_ans
+    beta_fixed = beta_fixed,
+    beta_random = beta_random,
+    sigma = sigma_ans,
+    omicron = omicron_ans,
+    vb_control = vb_control
   )
 
 

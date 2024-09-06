@@ -87,7 +87,7 @@ function(object, type = c("quantiles", "statistics", "correlations"), obs = 1, .
       # Loop through groups
       for (i in 1:length(obs)) {
         message("\nSummary for Observation ",  obs[i], "\n")
-        out_all <- cbind(object$output$p[obs[i],,],
+        out_all <- cbind(object$output$p[,obs[i],],
                          object$output$sigma)
         colnames(out_all) = c(paste0("P(", object$input$source_names, ")"), paste0("sd_", colnames(object$input$mixtures)))
 

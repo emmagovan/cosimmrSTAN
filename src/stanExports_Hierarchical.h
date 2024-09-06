@@ -29,7 +29,7 @@ using namespace stan::math;
 stan::math::profile_map profiles__;
 static constexpr std::array<const char*, 35> locations_array__ =
   {" (found before start of program)",
-  " (in 'Hierarchical', line 9, column 3 to column 22)",
+  " (in 'Hierarchical', line 9, column 3 to column 31)",
   " (in 'Hierarchical', line 10, column 2 to column 17)",
   " (in 'Hierarchical', line 13, column 3 to column 24)",
   " (in 'Hierarchical', line 30, column 2 to column 20)",
@@ -55,8 +55,8 @@ static constexpr std::array<const char*, 35> locations_array__ =
   " (in 'Hierarchical', line 6, column 9 to column 10)",
   " (in 'Hierarchical', line 6, column 11 to column 12)",
   " (in 'Hierarchical', line 6, column 2 to column 24)",
-  " (in 'Hierarchical', line 9, column 10 to column 11)",
-  " (in 'Hierarchical', line 9, column 13 to column 14)",
+  " (in 'Hierarchical', line 9, column 19 to column 20)",
+  " (in 'Hierarchical', line 9, column 22 to column 23)",
   " (in 'Hierarchical', line 10, column 9 to column 10)",
   " (in 'Hierarchical', line 10, column 11 to column 12)",
   " (in 'Hierarchical', line 13, column 10 to column 11)",
@@ -233,7 +233,9 @@ public:
       Eigen::Matrix<local_scalar_t__,-1,-1> tmp_X =
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(K, J, DUMMY_VAR__);
       current_statement__ = 1;
-      tmp_X = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(K, J);
+      tmp_X = in__.template read_constrain_lb<
+                Eigen::Matrix<local_scalar_t__,-1,-1>, jacobian__>(0, lp__,
+                K, J);
       Eigen::Matrix<local_scalar_t__,-1,-1> mu =
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(K, J, DUMMY_VAR__);
       current_statement__ = 2;
@@ -324,7 +326,9 @@ public:
         Eigen::Matrix<double,-1,-1>::Constant(K, J,
           std::numeric_limits<double>::quiet_NaN());
       current_statement__ = 1;
-      tmp_X = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(K, J);
+      tmp_X = in__.template read_constrain_lb<
+                Eigen::Matrix<local_scalar_t__,-1,-1>, jacobian__>(0, lp__,
+                K, J);
       Eigen::Matrix<double,-1,-1> mu =
         Eigen::Matrix<double,-1,-1>::Constant(K, J,
           std::numeric_limits<double>::quiet_NaN());
@@ -395,7 +399,7 @@ public:
       stan::model::assign(tmp_X,
         in__.read<Eigen::Matrix<local_scalar_t__,-1,-1>>(K, J),
         "assigning variable tmp_X");
-      out__.write(tmp_X);
+      out__.write_free_lb(0, tmp_X);
       Eigen::Matrix<local_scalar_t__,-1,-1> mu =
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(K, J, DUMMY_VAR__);
       current_statement__ = 2;
@@ -447,7 +451,7 @@ public:
           }
         }
       }
-      out__.write(tmp_X);
+      out__.write_free_lb(0, tmp_X);
       Eigen::Matrix<local_scalar_t__,-1,-1> mu =
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(K, J, DUMMY_VAR__);
       {
