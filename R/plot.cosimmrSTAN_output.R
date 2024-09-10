@@ -88,13 +88,20 @@ plot.cosimmrSTAN_output <-
       # Get the specified type
       type <- match.arg(type, several.ok = TRUE)
 
-#want to extract the right covariate number using the name?
+      if(x$input$intercept == TRUE){
+        n_fixed_cov = ncol(x$input$x_scaled) -1
+      }else{
+        n_fixed_cov = ncol(x$input$x_scaled)
+      }
 
       if(is.null(x$output$beta_random)  & (("beta_random_histogram" %in% type)|("beta_random_boxplot" %in% type))){
         message("You have selected a plot type that requires random effects but
 the model does not contain random effects. Please reselect
 model or plots to create and rerun.")
-      } else{
+      } else if(n_fixed_cov == 0 & (("beta_fixed_histogram" %in% type)|("beta_fixed_boxplot" %in% type))){
+      message("You have selected a plot type that requires fixed effects but
+the model does not contain fixed effects. Please reselect
+model or plots to create and rerun.")}else{
 
 
 
@@ -176,13 +183,15 @@ model or plots to create and rerun.")
      # x$output$beta_random # n samples x K x L random covariates - these will only ever be groups
 
 
-        total_cov = ncol(x$input$original_x)
-        if(x$input$intercept == TRUE){
-        n_fixed_cov = ncol(x$input$X_fixed) -1
-        }else{
-          n_fixed_cov = ncol(x$input$X_fixed)
-        }
-        n_random_cov = total_cov - n_fixed_cov
+      #  total_cov = ncol(x$input$x_scaled)
+
+
+   if(is.null(x$output$beta_random)){
+     total_levels = NULL
+   }else{
+
+      n_random_cov = length(x$input$re_names_order)
+      total_cov = n_random_cov + n_fixed_cov
       levels_random_cov = x$input$re_levels
 
 
@@ -193,16 +202,18 @@ cov_name_random = c(rep(NA, total_levels))
 random_names = c(rep(NA, n_random_cov))
 random_names = x$input$re_names_order#colnames(x$input$original_x)[(n_fixed_cov+1):(n_fixed_cov + n_random_cov)]
 cov_name_random = rep(random_names, levels_random_cov)
+}
 
 
+        if("beta_fixed_histogram" %in% type){
       #Could just do a loop and plot all betas
       for(l in 1:n_fixed_cov){
 
 
           if(x$input$intercept == TRUE){
-            c_name = colnames(x$input$X_fixed)[1+l]
+            c_name = colnames(x$input$x_scaled)[1+l]
           }else{
-            c_name = colnames(x$input$X_fixed)[l]
+            c_name = colnames(x$input$x_scaled)[l]
           }
 
           if(x$input$intercept == TRUE){
@@ -220,7 +231,7 @@ cov_name_random = rep(random_names, levels_random_cov)
           df_beta <- reshape2::melt(out_all_beta)
           colnames(df_beta) = c("Num", "Source", "Beta")
 
-          if("beta_fixed_histogram" %in% type){
+
 
           if(is.null(title_input) == TRUE){
 
@@ -247,10 +258,35 @@ cov_name_random = rep(random_names, levels_random_cov)
           print(g)
         }
 
+        }
 
 
 
           if("beta_fixed_boxplot" %in% type){
+            if(x$input$intercept == TRUE){
+              c_name = colnames(x$input$x_scaled)[1+l]
+            }else{
+              c_name = colnames(x$input$x_scaled)[l]
+            }
+
+            if(x$input$intercept == TRUE){
+
+              out_all_beta = x$output$beta_fixed[,(l+1),] #n samples x K x L
+
+            } else{
+              out_all_beta = x$output$beta_fixed[,(l),] #n samples x K x L
+
+            }
+
+            # out_all_beta = beta[cov_ind,,]
+            colnames(out_all_beta) = x$input$source_names
+            #I don't actually understand what this is doing
+            df_beta <- reshape2::melt(out_all_beta)
+            colnames(df_beta) = c("Num", "Source", "Beta")
+
+
+
+            for(l in 1:n_fixed_cov){
 
           if(is.null(title_input) == TRUE){
 
@@ -273,7 +309,7 @@ cov_name_random = rep(random_names, levels_random_cov)
         }
       }
 
-
+        if("beta_random_histogram" %in% type){
       for(l in 1:total_levels){
 
 
@@ -295,7 +331,7 @@ cov_name_random = rep(random_names, levels_random_cov)
           df_beta <- reshape2::melt(out_all_beta)
           colnames(df_beta) = c("Num", "Source", "Beta")
 
-          if("beta_random_histogram" %in% type){
+
 
           if(is.null(title_input) == TRUE){
 
@@ -320,9 +356,22 @@ cov_name_random = rep(random_names, levels_random_cov)
           #Boxplot
 
           print(g)
+      }
         }
 
         if("beta_random_boxplot" %in% type){
+          for(l in 1:total_levels){
+            c_name = cov_name_random[l]
+            level_name = colnames(x$input$X_random)[l]
+            out_all_beta = x$output$beta_random[,l,] #n samples x K x L
+
+
+
+            # out_all_beta = beta[cov_ind,,]
+            colnames(out_all_beta) = x$input$source_names
+            #I don't actually understand what this is doing
+            df_beta <- reshape2::melt(out_all_beta)
+            colnames(df_beta) = c("Num", "Source", "Beta")
 
 
           if(is.null(title_input) == TRUE){

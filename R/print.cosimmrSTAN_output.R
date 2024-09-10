@@ -12,7 +12,6 @@ print.cosimmr_output <-
   function(x, ...) {
     if (inherits(x, "cosimmrSTAN_output") == TRUE) {
         print(x$input)
-        message("The input data has been run via cosimmr_stan and has produced ")
-        message(nrow(x$output$BUGSoutput$sims.list$sigma), " samples.")
+        message("The input data has been run via cosimmr_stan.")
       }
   }

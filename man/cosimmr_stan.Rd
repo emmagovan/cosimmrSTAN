@@ -12,13 +12,15 @@ cosimmr_stan(
     c(rep(1, cosimmrSTAN_in$n_tracers)), omicron_shape = c(rep(1,
     cosimmrSTAN_in$n_tracers)), omicron_rate = c(rep(1, cosimmrSTAN_in$n_tracers)),
     cauchy_scale = 5),
-  vb_control = list(n_samples = 10000, adapt_iter = 30000, algorithm = "fullrank")
+  vb_control = list(n_samples = 10000, adapt_iter = 30000, algorithm = "fullrank",
+    tot_rel_obj = 0.001),
+  mcmc_control = list(iterations = 5000, chains = 4)
 )
 }
 \arguments{
 \item{cosimmrSTAN_in}{An object created via the function \code{\link{cosimmrSTAN_load}}}
 
-\item{type}{What type of model to run using STAN. Options are 'STAN_VB}
+\item{type}{What type of model to run using STAN. Options are 'STAN_VB' or 'STAN_MCMC'}
 
 \item{error_type}{Whether to use 'processxresidual' error term or
 'process+residual' term. Defaults to 'process+residual'}
@@ -33,6 +35,10 @@ distribution on error of random effects)}
 (the number of samples) to use in stan VB (defaults to 10000)), \code{adapt_iter}
 (the number of adaptive iterations (defaults to 30000)), and \code{algorithm}
 (the VB algorithm to use. Defaults to "fullrank")}
+
+\item{mcmc_control}{A list of values including \code{iterations} (the
+number of iterations to run stan MCMC for) and \code{chains} (the number of
+chains to use)}
 }
 \value{
 an object of class \code{cosimmrSTAN_output} with two named top-level
