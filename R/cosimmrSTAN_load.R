@@ -572,7 +572,8 @@ model = stanmodels$Hierarchical
     hierarchical_fitting = hierarchical_fitting,
     formula = deparse(formula),
     re_names_order = re_names_order,
-    re_levels = re_levels
+    re_levels = re_levels,
+    glFormula = a
 
   )
 
