@@ -34,7 +34,8 @@ number of tracers}
 matrix where the number of rows is the number of sources and the number of
 columns is the number of tracers}
 
-\item{source}{The raw source data if you wish to use raw source data.}
+\item{source}{The raw source data if you wish to use raw source data. Columns should
+be named "Source" for source names, then a column for each tracer.}
 
 \item{n_each_source}{The number of sources collected. Needed for hierarchical
 fitting}

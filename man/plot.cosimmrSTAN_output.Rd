@@ -7,11 +7,15 @@
 \method{plot}{cosimmrSTAN_output}(
   x,
   type = c("isospace", "prop_histogram", "prop_density", "beta_fixed_histogram",
-    "beta_fixed_boxplot", "beta_random_histogram", "beta_random_boxplot"),
+    "beta_fixed_boxplot", "beta_random_histogram", "beta_random_boxplot",
+    "covariates_plot"),
   obs = 1,
   binwidth = 0.05,
   alpha = 0.5,
   title = NULL,
+  cov_name = NULL,
+  one_plot = TRUE,
+  n_pred_samples = 5000,
   ...
 )
 }

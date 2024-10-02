@@ -8,14 +8,22 @@ data {
 }
 
 parameters {
-  matrix[J,K] mu_jk; // Matrix of mean values
- corr_matrix[J] Sigma_k[K];
+ matrix[J,K] mu_jk; // Matrix of mean values
+ corr_matrix[J] Omega[K];
+ vector<lower=0>[K] tau; // Separate tau for each source
+}
+
+transformed parameters{
+    matrix[J,J] Sigma[K];
+
+     for (k in 1:K) {
+    Sigma[k] = quad_form_diag(Omega[k], tau[k] * ones_vector(J)); // Covariance matrix for each source
+  }
 
 }
 
-
-
  model {
+   tau ~ cauchy(0, 2.5);
  // Prior on mu
   for(j in 1:J){
     for(k in 1:K){
@@ -24,13 +32,13 @@ parameters {
   }
 
 for(k in 1:K){
-  Sigma_k[k] ~ lkj_corr(shape_sig);
+  Omega[k] ~ lkj_corr(shape_sig);
 }
 
 
 
   // Likelihood
   for (i in 1:N) {
-      Y[i] ~ multi_normal(mu_jk[,source[i]], Sigma_k[source[i]]);
+      Y[i] ~ multi_normal(mu_jk[,source[i]], Sigma[source[i]]);
     }
 }

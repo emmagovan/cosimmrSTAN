@@ -234,7 +234,7 @@ predict.cosimmrSTAN_output <- function(object,
       for(i in 1:n_re){
         for(j in 1:nrow(x_pred)){
 
-          col_numbers[j,i] = which(as.numeric(re_mat[,i]) == as.numeric(re_x_pred[j,i]))[1]
+          col_numbers[j,i] = which((re_mat[,i]) == (re_x_pred[j,i]))[1]
         }
       }
 
@@ -398,13 +398,13 @@ predict.cosimmrSTAN_output <- function(object,
 
       }else if(scale_x == FALSE){
         if(object$input$intercept == TRUE){
-          scaled_full_mat = (stats::model.matrix(~ ., data=new_x))
+          scaled_full_mat = stats::model.matrix(~ ., data=new_x)
 
-          x_pred_mat = scaled_full_mat[-c(1:nrow(original_x)),]
+          x_pred_mat = matrix(scaled_full_mat[-c(1:nrow(original_x)),], nrow = nrow(x_pred))
         }else if(object$input$intercept == FALSE){
           scaled_full_mat = stats::model.matrix(~ .-1, data=new_x)
 
-          x_pred_mat = scaled_full_mat[-c(1:nrow(original_x)),]
+          x_pred_mat = matrix(scaled_full_mat[-c(1:nrow(original_x)),], nrow = nrow(x_pred))
         }
 
       }

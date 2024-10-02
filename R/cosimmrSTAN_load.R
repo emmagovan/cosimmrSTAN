@@ -26,7 +26,8 @@
 #' @param source_sds The standard deviations of the source values, given as a
 #' matrix where the number of rows is the number of sources and the number of
 #' columns is the number of tracers
-#' @param source The raw source data if you wish to use raw source data.
+#' @param source The raw source data if you wish to use raw source data. Columns should
+#' be named "Source" for source names, then a column for each tracer.
 #' @param n_each_source The number of sources collected. Needed for hierarchical
 #' fitting
 #' @param correction_means The means of the correction values, given as a
@@ -95,7 +96,7 @@ concentration_means = NULL,
 scale_x = TRUE,
 raw_source = FALSE,
 hierarchical_fitting = FALSE,
-shape_sig = 1) {
+shape_sig = 2) {
   # Function to load in data for cosimmrSTAN
 formula = formula
   #This just checks whether theres a | in the formula or not
@@ -224,6 +225,7 @@ formula = formula
 
 
   }else if(random_effects == FALSE){
+    a=NULL
     re_names_order = NULL
     re_levels = FALSE
     X_intercept = NULL
@@ -463,14 +465,25 @@ formula = formula
     mu_out = extracted_samples$mu_jk # This is n_samples * K * n_covariates
 
 
-    Sigma_out = extracted_samples$Sigma_k
+    Sigma_out = extracted_samples$Sigma
+    ## Need to convert this n_samples * K *J *J covariance matrix to a K *J matrix of sds
+    source_sds_out = matrix(NA, nrow = stan_dat$K, ncol = stan_dat$J)
+    colnames(source_sds_out) = sd_names
 
+    for (k in 1:stan_dat$K) {
+      for (j in 1:stan_dat$J) {
+        # Extract the variances (diagonal elements) for each (k, j) across 2000 samples
+        variances <- Sigma_out[, k, j, j]  # No need for sapply here, just get all at once
+
+        # Compute the mean of the standard deviations
+        source_sds_out[k, j] <- mean(sqrt(variances))  # Store mean std deviation for each source and isotope
+      }
+    }
 
 
     source_means_out = t(apply(mu_out, c(2,3), mean))
     colnames(source_means_out) = mean_names
-    source_sds_out = apply(Sigma_out, c(2,3), mean)
-    colnames(source_sds_out) = sd_names
+
 
 
 
