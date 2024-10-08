@@ -178,9 +178,14 @@ predict.cosimmrSTAN_output <- function(object,
 
         }else if(scale_x == FALSE){
           if(object$input$intercept == TRUE){
+            if(ncol(new_x) ==1){ #This is if the fixed part is just an intercept, we want to keep this as is??
+              x_pred_mat = matrix(1, ncol = 1)
+
+              }else{
             scaled_full_mat = (stats::model.matrix(~ ., data=new_x))
 
             x_pred_mat = scaled_full_mat[-c(1:nrow(original_x)),]
+              }
           }else if(object$input$intercept == FALSE){
             scaled_full_mat = stats::model.matrix(~ .-1, data=new_x)
 

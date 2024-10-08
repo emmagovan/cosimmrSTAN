@@ -202,7 +202,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           sigma_ans = extracted_samples$sigma
           omicron_ans = extracted_samples$omicron
           p_sample = extracted_samples$p
-
+          omega = extracted_samples$omega
 
 
         }else if(error_type == "process+residual"){
@@ -273,7 +273,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           sigma_ans = extracted_samples$sigma
           omicron_ans = NULL
           p_sample = extracted_samples$p
-
+          omega = extracted_samples$omega
 
         }
 
@@ -346,6 +346,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
       omicron_ans = extracted_samples$omicron
       beta_random = NULL
       p_sample = extracted_samples$p
+      omega = NULL
 
       #CONVERT TO F
       #f is x_inner * beta1 + x_outer * beta_2
@@ -454,6 +455,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
       omicron_ans = NULL
       beta_random = NULL
       p_sample = extracted_samples$p
+      omega = NULL
 
       #CONVERT TO F
       #f is x_inner * beta1 + x_outer * beta_2
@@ -537,7 +539,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           sigma_ans = extracted_samples$sigma
           omicron_ans = extracted_samples$omicron
           p_sample = extracted_samples$p
-
+          omega = extracted_samples$omega
 
 
 
@@ -584,6 +586,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           sigma_ans = extracted_samples$sigma
           omicron_ans = NULL
           p_sample = extracted_samples$p
+          omega = extracted_samples$omega
 
 
         }
@@ -632,6 +635,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           omicron_ans = extracted_samples$omicron
           beta_random = NULL
           p_sample = extracted_samples$p
+          omega = NULL
 
 
 
@@ -676,7 +680,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           omicron_ans = NULL
           beta_random = NULL
           p_sample = extracted_samples$p
-
+          omega = NULL
 
 
 
@@ -705,7 +709,8 @@ cosimmr_stan <- function(cosimmrSTAN_in,
     beta_random = beta_random,
     sigma = sigma_ans,
     omicron = omicron_ans,
-    vb_control = vb_control
+    vb_control = vb_control,
+    omega = omega
   )
 
 

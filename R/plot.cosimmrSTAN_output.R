@@ -248,7 +248,7 @@ cov_name_random = rep(random_names, levels_random_cov)
 
 
           #Histograms
-          g <- ggplot(df_beta, aes(x = Beta)) +
+          g <- ggplot(df_beta, aes(x = Beta, fill = Source)) +
             scale_fill_viridis(discrete = TRUE) +
             geom_histogram(binwidth = binwidth, alpha = alpha) +
             theme_bw() +
@@ -270,28 +270,50 @@ cov_name_random = rep(random_names, levels_random_cov)
 
 
           if("beta_fixed_boxplot" %in% type){
-            if(x$input$intercept == TRUE){
-              c_name = colnames(x$input$x_scaled)[1+l]
-            }else{
+
+            for(l in 1:n_fixed_cov){
+            #
+            # if(x$input$intercept == TRUE){
+            #   c_name = colnames(x$input$x_scaled)[1+l]
+            # }else{
+            #   c_name = colnames(x$input$x_scaled)[l]
+            # }
+            #
+            # if(x$input$intercept == TRUE){
+            #
+            #   out_all_beta = x$output$beta_fixed[,(l+1),] #n samples x K x L
+            #
+            # } else{
+            #   out_all_beta = x$output$beta_fixed[,(l),] #n samples x K x L
+            #
+            # }
+
               c_name = colnames(x$input$x_scaled)[l]
-            }
 
-            if(x$input$intercept == TRUE){
-
-              out_all_beta = x$output$beta_fixed[,(l+1),] #n samples x K x L
-
-            } else{
+              # if(x$input$intercept == TRUE){
+              #
+              #  out_all_beta = x$output$beta_fixed[,(l+1),] #n samples x K x L
+              #
+              # } else{
               out_all_beta = x$output$beta_fixed[,(l),] #n samples x K x L
 
-            }
+              #}
 
-            # out_all_beta = beta[cov_ind,,]
-            colnames(out_all_beta) = x$input$source_names
-            #I don't actually understand what this is doing
-            df_beta <- reshape2::melt(out_all_beta)
-            colnames(df_beta) = c("Num", "Source", "Beta")
+              # out_all_beta = beta[cov_ind,,]
+              colnames(out_all_beta) = x$input$source_names
+              #I don't actually understand what this is doing
+              df_beta <- reshape2::melt(out_all_beta)
+              colnames(df_beta) = c("Num", "Source", "Beta")
 
 
+
+            # # out_all_beta = beta[cov_ind,,]
+            # colnames(out_all_beta) = x$input$source_names
+            # #I don't actually understand what this is doing
+            # df_beta <- reshape2::melt(out_all_beta)
+            # colnames(df_beta) = c("Num", "Source", "Beta")
+            #
+            #
 
             for(l in 1:n_fixed_cov){
 
@@ -301,7 +323,7 @@ cov_name_random = rep(random_names, levels_random_cov)
 
           } else{title = title_input}
 
-          g <- ggplot(df_beta, aes(x = Beta)) +
+          g <- ggplot(df_beta, aes(x = Beta, fill = Source)) +
             scale_fill_viridis(discrete = TRUE) +
             geom_boxplot() +
             theme_bw() +
@@ -348,7 +370,7 @@ cov_name_random = rep(random_names, levels_random_cov)
 
 
           #Histograms
-          g <- ggplot(df_beta, aes(x = Beta)) +
+          g <- ggplot(df_beta, aes(x = Beta, fill = Source)) +
             scale_fill_viridis(discrete = TRUE) +
             geom_histogram(binwidth = binwidth, alpha = alpha) +
             theme_bw() +
@@ -387,7 +409,7 @@ cov_name_random = rep(random_names, levels_random_cov)
 
           } else{title = title_input}
 
-          g <- ggplot(df_beta, aes(x = Beta)) +
+          g <- ggplot(df_beta, aes(x = Beta, fill = Source)) +
             scale_fill_viridis(discrete = TRUE) +
             geom_boxplot() +
             theme_bw() +
