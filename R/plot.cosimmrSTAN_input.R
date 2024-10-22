@@ -25,8 +25,6 @@
 #' objects, e.g. Geese.
 #' @param colour If TRUE (default) creates a plot. If not, puts the plot in
 #' black and white
-#' @param colour_by_cov if TRUE this allows users to colour the mixtures on the
-#' isospace plot by a specified covariate. Defaults to FALSE
 #' @param  cov_name The name of the covariate the user wishes to colour the
 #' mixture points on the plot by
 #' @param ggargs Extra arguments to be included in the ggplot (e.g. axis limits)
@@ -94,10 +92,14 @@ plot.cosimmrSTAN_input <-
            sigmas = 1,
            mix_name = "Mixtures",
            colour = TRUE,
-           colour_by_cov = FALSE,
            cov_name = NULL,
            ggargs = NULL,
            ...) {
+
+    #set colour_by_cov to be TRUE or FALSE
+    if(is.null(cov_name) == TRUE){
+      colour_by_cov = FALSE
+    }else{colour_by_cov = TRUE}
 
     #This selects the correct column from the covariates df to colour by
     if(colour_by_cov == TRUE){

@@ -21,7 +21,7 @@
 #'(the VB algorithm to use. Defaults to "fullrank")
 #'@param mcmc_control A list of values including \code{iterations} (the
 #'number of iterations to run stan MCMC for) and \code{chains} (the number of
-#'chains to use)
+#'chains to use), \code{cores} (The number of cores to run chains on in parallel)
 #'
 #'@return an object of class \code{cosimmrSTAN_output} with two named top-level
 #'components: \item{input}{The \code{cosimmrSTAN_input} object given to the
@@ -96,18 +96,20 @@ cosimmr_stan <- function(cosimmrSTAN_in,
                          prior_control = list(
                           sigma_shape = c(rep(1, cosimmrSTAN_in$n_tracers)),
                           sigma_rate = c(rep(1, cosimmrSTAN_in$n_tracers)),
-                          omicron_shape = c(rep(1, cosimmrSTAN_in$n_tracers)),
-                          omicron_rate = c(rep(1, cosimmrSTAN_in$n_tracers)),
-                          cauchy_scale = 5
+                          omicron_mean = c(rep(0, cosimmrSTAN_in$n_tracers)),
+                          omicron_sd = c(rep(2.5, cosimmrSTAN_in$n_tracers)),
+                          cauchy_scale = 1
                          ),
                          vb_control = list(
                          n_samples = 10000,
-                         adapt_iter = 30000,
+                         adapt_iter = 50,
                          algorithm = "fullrank",
-                         tot_rel_obj = 0.001),
+                         tot_rel_obj = 0.0001,
+                         iter = 20000),
                          mcmc_control = list(
-                           iterations = 5000,
-                           chains = 4
+                           iterations = 10000,
+                           chains = 4,
+                           cores = 1
                          )
                          ){
 
@@ -119,7 +121,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
 
   #Need to add solo check here
   if (nrow(cosimmrSTAN_in$mixtures) == 1) {
-    message("Only 1 mixture value, performing a simmr solo run...\n")
+    message("Only 1 mixture value, performing a cosimmrSTAN solo run...\n")
     solo <- 0
   } else {
     solo <- 1
@@ -191,10 +193,29 @@ cosimmr_stan <- function(cosimmrSTAN_in,
                         'sigma_raw' = sigma_raw_start_opt,
                         'omicron' = omicron_start_opt),
             tol_rel_obj = vb_control$tot_rel_obj,
-            refresh = FALSE
+            refresh = FALSE,
+            iter = vb_control$iter
           )
 
           extracted_samples = rstan::extract(fit_vb)
+
+
+          vb_summary <- rstan::summary(fit_vb)
+          # Extract the Pareto k values
+          pareto_k_values <- vb_summary$summary[, "khat"]
+
+
+
+          # Create a summary of the Pareto k values
+          pareto_k_summary <- data.frame(
+            Mean = mean(pareto_k_values),
+            Min = min(pareto_k_values),
+            Max = max(pareto_k_values),
+            `Below 0.5` = sum(pareto_k_values < 0.5),
+            `Between 0.5 and 0.7` = sum(pareto_k_values >= 0.5 & pareto_k_values < 0.7),
+            `Between 0.7 and 1.0` = sum(pareto_k_values >= 0.7 & pareto_k_values < 1.0),
+            `Above 1.0` = sum(pareto_k_values >=1.0)
+          )
 
           #Want to extract all the betas in a sensible way first I think
           beta_fixed = extracted_samples$beta0
@@ -203,7 +224,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           omicron_ans = extracted_samples$omicron
           p_sample = extracted_samples$p
           omega = extracted_samples$omega
-
+          rhat_summary = NULL
 
         }else if(error_type == "process+residual"){
           #not nested random effects p+r WORKING
@@ -261,10 +282,28 @@ cosimmr_stan <- function(cosimmrSTAN_in,
                         'sigma_raw' = sigma_raw_start_opt,
                         'omicron' = omicron_start_opt),
             tol_rel_obj = vb_control$tot_rel_obj,
-            refresh = FALSE
+            refresh = FALSE,
+            iter = vb_control$iter
           )
 
           extracted_samples = rstan::extract(fit_vb)
+
+
+          vb_summary <- rstan::summary(fit_vb)
+          # Extract the Pareto k values
+          pareto_k_values <- vb_summary$summary[, "khat"]
+
+
+          # Create a summary of the Pareto k values
+          pareto_k_summary <- data.frame(
+            Mean = mean(pareto_k_values),
+            Min = min(pareto_k_values),
+            Max = max(pareto_k_values),
+            `Below 0.5` = sum(pareto_k_values < 0.5),
+            `Between 0.5 and 0.7` = sum(pareto_k_values >= 0.5 & pareto_k_values < 0.7),
+            `Between 0.7 and 1.0` = sum(pareto_k_values >= 0.7 & pareto_k_values < 1.0),
+            `Above 1.0` = sum(pareto_k_values >=1.0)
+          )
 
           #Want to extract all the betas in a sensible way first I think
           #alpha_ans = extracted_samples$alpha
@@ -274,7 +313,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           omicron_ans = NULL
           p_sample = extracted_samples$p
           omega = extracted_samples$omega
-
+          rhat_summary = NULL
         }
 
 
@@ -332,12 +371,30 @@ cosimmr_stan <- function(cosimmrSTAN_in,
                     'sigma_raw' = sigma_raw_start_opt,
                     'omicron' = omicron_start_opt),
         tol_rel_obj = vb_control$tot_rel_obj,
-        refresh = FALSE
+        refresh = FALSE,
+        iter = vb_control$iter
       )
 
 
 
       extracted_samples = rstan::extract(fit_vb)
+
+
+      vb_summary <- rstan::summary(fit_vb)
+      # Extract the Pareto k values
+      pareto_k_values <- vb_summary$summary[, "khat"]
+
+      # Create a summary of the Pareto k values
+      pareto_k_summary <- data.frame(
+        Mean = mean(pareto_k_values),
+        Min = min(pareto_k_values),
+        Max = max(pareto_k_values),
+        `Below 0.5` = sum(pareto_k_values < 0.5),
+        `Between 0.5 and 0.7` = sum(pareto_k_values >= 0.5 & pareto_k_values < 0.7),
+        `Between 0.7 and 1.0` = sum(pareto_k_values >= 0.7 & pareto_k_values < 1.0),
+        `Above 1.0` = sum(pareto_k_values >=1.0)
+      )
+
 
       #Want to extract all the betas in a sensible way first I think
       #alpha_ans = extracted_samples$alpha
@@ -347,7 +404,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
       beta_random = NULL
       p_sample = extracted_samples$p
       omega = NULL
-
+      rhat_summary = NULL
       #CONVERT TO F
       #f is x_inner * beta1 + x_outer * beta_2
       #p should be n_ind * n_samples * K
@@ -442,11 +499,27 @@ cosimmr_stan <- function(cosimmrSTAN_in,
          init = list('beta' = beta1_start_opt,
                      'sigma_raw' = sigma_raw_start_opt),
          tol_rel_obj = vb_control$tot_rel_obj,
-         refresh = FALSE
+         refresh = FALSE,
+         iter = vb_control$iter
        )
 
 
       extracted_samples = rstan::extract(fit_vb)
+      vb_summary <- rstan::summary(fit_vb)
+      # Extract the Pareto k values
+      pareto_k_values <- vb_summary$summary[, "khat"]
+
+      # Create a summary of the Pareto k values
+      pareto_k_summary <- data.frame(
+        Mean = mean(pareto_k_values),
+        Min = min(pareto_k_values),
+        Max = max(pareto_k_values),
+        `Below 0.5` = sum(pareto_k_values < 0.5),
+        `Between 0.5 and 0.7` = sum(pareto_k_values >= 0.5 & pareto_k_values < 0.7),
+        `Between 0.7 and 1.0` = sum(pareto_k_values >= 0.7 & pareto_k_values < 1.0),
+        `Above 1.0` = sum(pareto_k_values >=1.0)
+      )
+
 
       #Want to extract all the betas in a sensible way first I think
       #alpha_ans = extracted_samples$alpha
@@ -456,7 +529,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
       beta_random = NULL
       p_sample = extracted_samples$p
       omega = NULL
-
+      rhat_summary = NULL
       #CONVERT TO F
       #f is x_inner * beta1 + x_outer * beta_2
       #p should be n_ind * n_samples * K
@@ -525,13 +598,25 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             data = stan_dat,
             seed = 1,
             iter = mcmc_control$iterations,
-            cores = 1,
+            cores = mcmc_control$cores,
             chains = mcmc_control$chains
           )
 
 
 
           extracted_samples = rstan::extract(fit_mcmc)
+
+          s_out = rstan::summary(fit_mcmc)
+          rhat_values = s_out$summary[,"Rhat"]
+
+          rhat_summary <- data.frame(
+            Mean = mean(rhat_values, na.rm = TRUE),
+            Min = min(rhat_values, na.rm = TRUE),
+            Max = max(rhat_values, na.rm = TRUE),
+            Count_Above_1.1 = sum(rhat_values > 1.1, na.rm = TRUE),
+            Count_Within_1.0_to_1.1 = sum(rhat_values <= 1.1 & rhat_values > 1.0, na.rm = TRUE),
+            Total_Parameters = length(rhat_values)
+          )
 
           #Want to extract all the betas in a sensible way first I think
           beta_fixed = extracted_samples$beta0
@@ -540,7 +625,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           omicron_ans = extracted_samples$omicron
           p_sample = extracted_samples$p
           omega = extracted_samples$omega
-
+          pareto_k_summary = NULL
 
 
 
@@ -573,11 +658,23 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             data = stan_dat,
             seed = 1,
             iter = mcmc_control$iterations,
-            cores = 1,
+            cores = mcmc_control$cores,
             chains = mcmc_control$chains
           )
 
           extracted_samples = rstan::extract(fit_mcmc)
+
+          s_out = rstan::summary(fit_mcmc)
+          rhat_values = s_out$summary[,"Rhat"]
+
+          rhat_summary <- data.frame(
+            Mean = mean(rhat_values, na.rm = TRUE),
+            Min = min(rhat_values, na.rm = TRUE),
+            Max = max(rhat_values, na.rm = TRUE),
+            Count_Above_1.1 = sum(rhat_values > 1.1, na.rm = TRUE),
+            Count_Within_1.0_to_1.1 = sum(rhat_values <= 1.1 & rhat_values > 1.0, na.rm = TRUE),
+            Total_Parameters = length(rhat_values)
+          )
 
           #Want to extract all the betas in a sensible way first I think
           #alpha_ans = extracted_samples$alpha
@@ -587,7 +684,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           omicron_ans = NULL
           p_sample = extracted_samples$p
           omega = extracted_samples$omega
-
+          pareto_k_summary = NULL
 
         }
 
@@ -622,11 +719,23 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             data = stan_dat,
             seed = 1,
             iter = mcmc_control$iterations,
-            cores = 1,
+            cores = mcmc_control$cores,
             chains = mcmc_control$chains
           )
 
           extracted_samples = rstan::extract(fit_mcmc)
+
+          s_out = rstan::summary(fit_mcmc)
+          rhat_values = s_out$summary[,"Rhat"]
+
+          rhat_summary <- data.frame(
+            Mean = mean(rhat_values, na.rm = TRUE),
+            Min = min(rhat_values, na.rm = TRUE),
+            Max = max(rhat_values, na.rm = TRUE),
+            Count_Above_1.1 = sum(rhat_values > 1.1, na.rm = TRUE),
+            Count_Within_1.0_to_1.1 = sum(rhat_values <= 1.1 & rhat_values > 1.0, na.rm = TRUE),
+            Total_Parameters = length(rhat_values)
+          )
 
           #Want to extract all the betas in a sensible way first I think
           #alpha_ans = extracted_samples$alpha
@@ -636,7 +745,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           beta_random = NULL
           p_sample = extracted_samples$p
           omega = NULL
-
+          pareto_k_summary = NULL
 
 
 
@@ -669,11 +778,23 @@ cosimmr_stan <- function(cosimmrSTAN_in,
             data = stan_dat,
             seed = 1,
             iter = mcmc_control$iterations,
-            cores = 1,
+            cores = mcmc_control$cores,
             chains = mcmc_control$chains
           )
 
           extracted_samples = rstan::extract(fit_mcmc)
+
+          s_out = rstan::summary(fit_mcmc)
+          rhat_values = s_out$summary[,"Rhat"]
+
+          rhat_summary <- data.frame(
+            Mean = mean(rhat_values, na.rm = TRUE),
+            Min = min(rhat_values, na.rm = TRUE),
+            Max = max(rhat_values, na.rm = TRUE),
+            Count_Above_1.1 = sum(rhat_values > 1.1, na.rm = TRUE),
+            Count_Within_1.0_to_1.1 = sum(rhat_values <= 1.1 & rhat_values > 1.0, na.rm = TRUE),
+            Total_Parameters = length(rhat_values)
+          )
 
           beta_fixed = extracted_samples$beta # This is n_samples * K * n_covariates
           sigma_ans = extracted_samples$sigma
@@ -681,7 +802,7 @@ cosimmr_stan <- function(cosimmrSTAN_in,
           beta_random = NULL
           p_sample = extracted_samples$p
           omega = NULL
-
+          pareto_k_summary = NULL
 
 
 
@@ -710,7 +831,9 @@ cosimmr_stan <- function(cosimmrSTAN_in,
     sigma = sigma_ans,
     omicron = omicron_ans,
     vb_control = vb_control,
-    omega = omega
+    omega = omega,
+    pareto_k_summary = pareto_k_summary,
+    rhat_summary = rhat_summary
   )
 
 

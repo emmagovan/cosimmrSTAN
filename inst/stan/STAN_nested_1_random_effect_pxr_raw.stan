@@ -16,8 +16,8 @@ data {
     matrix[N, L1] X_fixed; // Intercept
   matrix[N, L2] X_random; // Covariates matrix for pack/inside/nested one
   real<lower=0.001> cauchy_scale;
-    vector[J] omicron_shape; // Prior shape for omicron
-  vector[J] omicron_rate; // Prior rate for omicron
+    vector[J] omicron_mean; // Prior shape for omicron
+  vector[J] omicron_sd; // Prior rate for omicron
 }
 
 parameters {
@@ -70,7 +70,7 @@ transformed parameters {
 
   // Prior on sigma_raw
   sigma_raw ~ gamma(sigma_shape, sigma_rate);
-  omicron ~ gamma(omicron_shape, omicron_rate);
+  omicron ~ normal(omicron_mean, omicron_sd);
 
   // Likelihood
   for (j in 1:J) {

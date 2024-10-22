@@ -19,7 +19,7 @@ transformed parameters {
   // Generate src_tau values
   for (k in 1:K) {
     for (j in 1:J) {
-      src_tau[k, j] = tmp_X[k, j] / (source_sd[k, j] * (n[k] - 1));
+      src_tau[k, j] = tmp_X[k, j] / (square(source_sd[k, j]) * (n[k] - 1));
     }
   }
 }
@@ -28,7 +28,7 @@ model {
 
 for(k in 1:K){
 for(j in 1:J){
-mu[k, j] ~ normal(source_mean[k,j], n[k]/source_sd[k,j]);
+mu[k, j] ~ normal(source_mean[k,j], source_sd[k,j]/sqrt(n[k]));
 tmp_X[k,j] ~ chi_square(n[k]);
 }
 }

@@ -48,7 +48,7 @@ in_alli<-cosimmrSTAN_load(formula,
 
 We can print a summary of the loaded in data
 ```{r}
-print.cosimmrSTAN_input(in_alli)
+print(in_alli)
 ```
 
 
@@ -73,24 +73,25 @@ summary(alli_out)
 plot(alli_out, type = c("beta_fixed_histogram", "prop_density"))
 ```
 
-We can then look at a random effect in Wolves data from 
+We can then look at a random effect in Wolves data from Semmens et al 2009 
 
 
 ```{r}
 wolves_data = cosimmrSTAN::wolves_data
 ```
 
-For our first example we will look at Length as a fixed effect. We first load in our data using the `cosimmrSTAN_load` function.
+For our second example we will look at Pack as a random effect. We first load in our data using the `cosimmrSTAN_load` function.
 ```{r}
-pack = wolves_data$pack
-formula = wolves_data$y ~ pack
+pack = as.factor(wolves_data$pack)
+formula = wolves_data$y ~ (1|pack)
 
 in_wolves<-cosimmrSTAN_load(formula,
                  source_names = wolves_data$source_names,
                  source_means = wolves_data$s_mean,
                  source_sds = wolves_data$s_sd,
                  correction_means = wolves_data$c_mean,
-                 correction_sds = wolves_data$c_sd)
+                 correction_sds = wolves_data$c_sd,
+                 scale_x = FALSE)
 
 ```
 

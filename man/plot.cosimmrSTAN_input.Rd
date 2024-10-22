@@ -13,7 +13,6 @@
   sigmas = 1,
   mix_name = "Mixtures",
   colour = TRUE,
-  colour_by_cov = FALSE,
   cov_name = NULL,
   ggargs = NULL,
   ...
@@ -42,9 +41,6 @@ objects, e.g. Geese.}
 
 \item{colour}{If TRUE (default) creates a plot. If not, puts the plot in
 black and white}
-
-\item{colour_by_cov}{if TRUE this allows users to colour the mixtures on the
-isospace plot by a specified covariate. Defaults to FALSE}
 
 \item{cov_name}{The name of the covariate the user wishes to colour the
 mixture points on the plot by}

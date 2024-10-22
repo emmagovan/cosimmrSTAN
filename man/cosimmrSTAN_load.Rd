@@ -17,7 +17,7 @@ cosimmrSTAN_load(
   scale_x = TRUE,
   raw_source = FALSE,
   hierarchical_fitting = FALSE,
-  shape_sig = 1
+  eta = 1
 )
 }
 \arguments{

@@ -6,16 +6,16 @@
 \usage{
 \method{plot}{cosimmrSTAN_output}(
   x,
-  type = c("isospace", "prop_histogram", "prop_density", "beta_fixed_histogram",
-    "beta_fixed_boxplot", "beta_random_histogram", "beta_random_boxplot",
-    "covariates_plot"),
+  type = c("isospace", "prop_histogram", "prop_density", "beta_fixed_density",
+    "beta_fixed_boxplot", "beta_random_density", "beta_random_boxplot",
+    "covariates_plot", "omega_density"),
   obs = 1,
   binwidth = 0.05,
   alpha = 0.5,
   title = NULL,
   cov_name = NULL,
   one_plot = TRUE,
-  n_pred_samples = 5000,
+  n_pred_samples = 1000,
   ...
 )
 }
@@ -24,8 +24,8 @@
 \code{\link{cosimmr_stan}}.}
 
 \item{type}{The type of plot required. Can be one or more of 'isospace',
-'prop_histogram', 'prop_density', 'beta_fixed_histogram', 'beta_fixed_boxplot',
-'beta_random_histogram', 'beta_random_boxplot'}
+'prop_histogram', 'prop_density', 'beta_fixed_density', 'beta_fixed_boxplot',
+'beta_random_density', 'beta_random_boxplot'}
 
 \item{obs}{The observation number you wish to plot}
 
@@ -39,8 +39,8 @@ matrix plots}
 \item{...}{Currently not used}
 }
 \value{
-one or more of 'isospace', 'beta_fixed_histogram',
-'beta_fixed_boxplot', 'prop_histogram', 'prop_density', 'beta_random_boxplot'
+one or more of 'isospace', 'beta_fixed_density',
+'beta_fixed_boxplot', 'prop_histogram', 'prop_density', 'beta_random_density'
 or 'beta_random_histogram'
 }
 \description{
@@ -54,7 +54,6 @@ allows the user to judge which sources are identifiable by the model.
 Further detail about these plots is provided in the vignette.
 }
 \examples{
-
 \donttest{
 # A simple example with 10 observations, 2 tracers and 4 sources
 

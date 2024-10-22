@@ -13,8 +13,8 @@ data {
   vector[J] sigma_rate; // Prior rate for sigma
   real<lower=0> not_solo; // Adjustment factor for sigma
   matrix[N, L] X; // Covariates matrix
-  vector[J] omicron_shape; // Prior shape for sigma
-  vector[J] omicron_rate; // Prior rate for sigma
+  vector[J] omicron_mean; // Prior shape for sigma
+  vector[J] omicron_sd; // Prior rate for sigma
 }
 
 parameters {
@@ -61,7 +61,7 @@ transformed parameters {
 
   // Prior on sigma_raw
   sigma_raw ~ gamma(sigma_shape, sigma_rate);
-  omicron ~ gamma(omicron_shape, omicron_rate);
+  omicron ~ normal(omicron_mean, omicron_sd);
 
   // Likelihood
   for (j in 1:J) {

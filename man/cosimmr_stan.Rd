@@ -9,12 +9,12 @@ cosimmr_stan(
   type = "STAN_VB",
   error_type = "process+residual",
   prior_control = list(sigma_shape = c(rep(1, cosimmrSTAN_in$n_tracers)), sigma_rate =
-    c(rep(1, cosimmrSTAN_in$n_tracers)), omicron_shape = c(rep(1,
-    cosimmrSTAN_in$n_tracers)), omicron_rate = c(rep(1, cosimmrSTAN_in$n_tracers)),
-    cauchy_scale = 5),
-  vb_control = list(n_samples = 10000, adapt_iter = 30000, algorithm = "fullrank",
-    tot_rel_obj = 0.001),
-  mcmc_control = list(iterations = 5000, chains = 4)
+    c(rep(1, cosimmrSTAN_in$n_tracers)), omicron_mean = c(rep(0,
+    cosimmrSTAN_in$n_tracers)), omicron_sd = c(rep(2.5, cosimmrSTAN_in$n_tracers)),
+    cauchy_scale = 1),
+  vb_control = list(n_samples = 10000, adapt_iter = 50, algorithm = "fullrank",
+    tot_rel_obj = 1e-04, iter = 20000),
+  mcmc_control = list(iterations = 10000, chains = 4, cores = 1)
 )
 }
 \arguments{
@@ -38,7 +38,7 @@ distribution on error of random effects)}
 
 \item{mcmc_control}{A list of values including \code{iterations} (the
 number of iterations to run stan MCMC for) and \code{chains} (the number of
-chains to use)}
+chains to use), \code{cores} (The number of cores to run chains on in parallel)}
 }
 \value{
 an object of class \code{cosimmrSTAN_output} with two named top-level

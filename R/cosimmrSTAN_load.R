@@ -96,7 +96,7 @@ concentration_means = NULL,
 scale_x = TRUE,
 raw_source = FALSE,
 hierarchical_fitting = FALSE,
-shape_sig = 2) {
+eta = 1) {
   # Function to load in data for cosimmrSTAN
 formula = formula
   #This just checks whether theres a | in the formula or not
@@ -444,7 +444,7 @@ formula = formula
       N = length(source$Source),
       Y = source[,2:ncol(source)],
       source = as.numeric(factor(source$Source, levels = unique(source$Source))),
-      shape_sig = shape_sig
+      shape_sig = eta
     )
 
     fit_mcmc<- sampling(

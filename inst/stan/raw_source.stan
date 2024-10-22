@@ -27,7 +27,7 @@ transformed parameters{
  // Prior on mu
   for(j in 1:J){
     for(k in 1:K){
-      mu_jk[j,k] ~ normal(0,100);
+      mu_jk[j,k] ~ normal(0,sqrt(1000));
     }
   }
 
